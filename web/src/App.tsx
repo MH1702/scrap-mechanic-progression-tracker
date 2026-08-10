@@ -443,7 +443,7 @@ export function App() {
 
       <div className="relative grid min-h-0 min-w-0 overflow-hidden">
         <div
-          className={`absolute inset-0 grid min-h-0 min-w-0 ${showRightSidebar ? "grid-cols-[19rem_minmax(0,1fr)_20rem]" : "grid-cols-[19rem_minmax(0,1fr)]"} ${appView === "map" ? "" : "invisible pointer-events-none"}`}
+          className={`absolute inset-0 grid min-h-0 min-w-0 ${showRightSidebar ? "grid-cols-[19rem_minmax(0,1fr)_20rem]" : "grid-cols-[19rem_minmax(0,1fr)]"} ${appView === "map" ? "" : "hidden pointer-events-none"}`}
           aria-hidden={appView !== "map"}
         >
           <MarkerSidebar
@@ -503,7 +503,7 @@ export function App() {
           )}
         </div>
         <div
-          className={`absolute inset-0 min-h-0 min-w-0 overflow-hidden ${appView === "progression" ? "" : "invisible pointer-events-none"}`}
+          className={`absolute inset-0 min-h-0 min-w-0 overflow-hidden ${appView === "progression" ? "" : "hidden pointer-events-none"}`}
           aria-hidden={appView !== "progression"}
         >
           <SchematicProgression
