@@ -368,6 +368,7 @@ export function MarkerSidebar({
             {(!searching || beaconMarkers.length > 0) && <MarkerGroup
               title="Beacons"
               count={beaconMarkers.length}
+              defaultCollapsed
               visibility={groupVisibility(
                 beaconMarkers.map((marker) => marker.key),
                 hiddenMarkerKeys,
@@ -474,6 +475,7 @@ export function MarkerSidebar({
                   key={group.category}
                   title={group.label}
                   count={items.length}
+                  defaultCollapsed={group.category === "main_quest"}
                   visibility={groupVisibility(
                     items.map((marker) => marker.key),
                     hiddenMarkerKeys,
@@ -591,6 +593,7 @@ function MarkerGroup({
   count,
   visibility,
   onToggle,
+  defaultCollapsed = false,
   forceExpanded = false,
   children,
 }: {
@@ -598,10 +601,11 @@ function MarkerGroup({
   count: number
   visibility: GroupVisibility
   onToggle(): void
+  defaultCollapsed?: boolean
   forceExpanded?: boolean
   children: React.ReactNode
 }) {
-  const [collapsed, setCollapsed] = useState(() => visibility === "none")
+  const [collapsed, setCollapsed] = useState(() => defaultCollapsed || visibility === "none")
   const allVisible = visibility === "all"
   const expanded = forceExpanded || !collapsed
 
