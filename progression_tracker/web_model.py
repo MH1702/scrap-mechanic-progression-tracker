@@ -42,8 +42,12 @@ def decode(path):
     # desktop decoder can identify the local account. Player 1 is the host in
     # the game's stable player index; retain Guest N for all other records.
     for player in players:
-        player["label"] = ("Host" if player["player_id"] == 1
+        player["label"] = ("You" if player["player_id"] == 1
                            else "Guest %d" % player["player_id"])
+        # Steam IDs exceed JavaScript's safe integer range. Keep them lossless
+        # so the browser can use the host ID to validate account unlock files.
+        player["steam_id"] = (str(player["steam_id"])
+                              if player.get("steam_id") is not None else None)
 
     return {
         "bounds": bounds,

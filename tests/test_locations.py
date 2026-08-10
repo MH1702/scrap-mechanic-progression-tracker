@@ -11,6 +11,29 @@ class Tile(object):
 
 
 class LocationTests(unittest.TestCase):
+    def test_recipe_manager_channel_is_authoritative_and_normalized(self):
+        connection = mock.Mock()
+        connection.execute.return_value = [(b"recipe-manager",)]
+        save = mock.Mock(_tables={"ScriptData"}, con=connection)
+        decoded = {
+            "unlockedRecipes": {
+                "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA": True,
+                "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb": False,
+                123: True,
+            },
+        }
+        with mock.patch("progression_tracker.locations.unpack_blob",
+                        return_value=b"LUA recipe data"), mock.patch(
+                            "progression_tracker.locations.smlua.loads",
+                            return_value=decoded):
+            self.assertEqual(locations._unlocked_recipes(save), {
+                "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            })
+        connection.execute.assert_called_once_with(
+            "SELECT data FROM ScriptData WHERE key=?",
+            (locations.RECIPE_STORAGE_KEY,),
+        )
+
     def test_growlabs_use_game_numbering_including_ruin_city(self):
         expected = [137, 304, 507, 206, 103, 803, 104]
         self.assertEqual([locations.POIS[p][0] for p in expected],
@@ -19,6 +42,7 @@ class LocationTests(unittest.TestCase):
 
     def test_ship_name_and_first_station_dual_presentation(self):
         self.assertEqual(locations.POIS[105][0], "Lorenzo's Ship")
+        self.assertEqual(locations.POIS[105][2], "quest_endgame")
         self.assertEqual(locations.POIS[101][0], "Crashed Ship")
         self.assertEqual(locations.presentations(124), (
             ("The Mechanic Station", "main_quest", "quest_mechanicstation"),
@@ -149,23 +173,27 @@ class LocationTests(unittest.TestCase):
 
     @mock.patch("progression_tracker.locations._unlocked_pois", return_value={137, 304})
     @mock.patch("progression_tracker.locations._unlocked_logs", return_value={"packing-log"})
+    @mock.patch("progression_tracker.locations._unlocked_recipes",
+                return_value={"recipe-b", "recipe-a"})
     @mock.patch("progression_tracker.locations._quest_state",
                 return_value=({"quest_endgame"}, {"quest_tutorial"}))
     def test_progression_state_is_sorted_and_json_ready(
-            self, _quests, _logs, _pois):
+            self, _quests, _recipes, _logs, _pois):
         self.assertEqual(locations.progression_state(object()), {
             "activeQuests": ["quest_endgame"],
             "completedQuests": ["quest_tutorial"],
             "unlockedLogs": ["packing-log"],
             "unlockedPoiTypes": [137, 304],
+            "unlockedRecipes": ["recipe-a", "recipe-b"],
         })
 
     @mock.patch("progression_tracker.locations._poi_tile_uuids")
     @mock.patch("progression_tracker.locations._unlocked_pois")
     @mock.patch("progression_tracker.locations._unlocked_logs", return_value=set())
+    @mock.patch("progression_tracker.locations._unlocked_recipes", return_value=set())
     @mock.patch("progression_tracker.locations._quest_state")
     def test_collect_marks_progression_and_centres_multicell_tile(
-            self, quest_state, _logs, unlocked_pois, tile_uuids):
+            self, quest_state, _recipes, _logs, unlocked_pois, tile_uuids):
         quest_state.return_value = ({"quest_trader_tracking"}, set())
         unlocked_pois.return_value = {137}
         tile_uuids.return_value = {

@@ -68,7 +68,7 @@ class PlayerRecordTests(unittest.TestCase):
 
         save._label_players(players)
 
-        self.assertEqual(players[0]["label"], "Host")
+        self.assertEqual(players[0]["label"], "You")
         self.assertEqual(players[1]["label"], "Guest 7")
 
 

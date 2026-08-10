@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from "react"
-import { Maximize2Icon, MinusIcon, PlusIcon } from "lucide-react"
+import { CheckIcon, CopyIcon, FolderOpenIcon, Maximize2Icon, MinusIcon, PlusIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -32,6 +32,7 @@ interface MapViewportProps {
   alwaysShowLabels: boolean
   placingCustomMarker: boolean
   onFile(file?: File): void
+  onOpenFile(): void
   onPlaceCustomMarker(worldX: number, worldY: number): void
   onSelectMarker(target: MarkerTarget): void
   onStats(stats?: MapStats): void
@@ -66,6 +67,7 @@ export function MapViewport({
   alwaysShowLabels,
   placingCustomMarker,
   onFile,
+  onOpenFile,
   onPlaceCustomMarker,
   onSelectMarker,
   onStats,
@@ -77,11 +79,34 @@ export function MapViewport({
   const transformRef = useRef<Transform>({ scale: 1, x: 0, y: 0 })
   const appliedScaleRef = useRef<number | null>(null)
   const transformFrameRef = useRef<number | null>(null)
-  const pointerRef = useRef<{ id: number; x: number; y: number } | null>(null)
+  const pointerRef = useRef<{
+    id: number
+    button: number
+    x: number
+    y: number
+  } | null>(null)
   const [draggingFile, setDraggingFile] = useState(false)
+  const [savePathCopied, setSavePathCopied] = useState(false)
   const [missingTiles, setMissingTiles] = useState(0)
   const [zoomPercent, setZoomPercent] = useState(100)
   const [contextMenu, setContextMenu] = useState<MapContextMenu>()
+  const saveRootPath = "%APPDATA%\\Axolot Games\\Scrap Mechanic\\User"
+
+  const copySavePath = async () => {
+    try {
+      await navigator.clipboard.writeText(saveRootPath)
+    } catch {
+      const textarea = document.createElement("textarea")
+      textarea.value = saveRootPath
+      textarea.style.position = "fixed"
+      textarea.style.opacity = "0"
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand("copy")
+      textarea.remove()
+    }
+    setSavePathCopied(true)
+  }
 
   useEffect(() => {
     if (!contextMenu) return
@@ -298,10 +323,10 @@ export function MapViewport({
   useEffect(() => {
     const viewport = viewportRef.current
     if (!viewport) return
-    const observer = new ResizeObserver(() => model && fitMap())
+    const observer = new ResizeObserver(() => model && scheduleTransform())
     observer.observe(viewport)
     return () => observer.disconnect()
-  }, [fitMap, model])
+  }, [model, scheduleTransform])
 
   const onWheel = (event: React.WheelEvent) => {
     if (!model) return
@@ -326,23 +351,29 @@ export function MapViewport({
   }
 
   const onPointerDown = (event: React.PointerEvent) => {
-    if (!model || event.button !== 0) return
+    if (!model || (event.button !== 0 && event.button !== 1)) return
+    if (event.button === 1) event.preventDefault()
     setContextMenu(undefined)
-    pointerRef.current = { id: event.pointerId, x: event.clientX, y: event.clientY }
+    pointerRef.current = {
+      id: event.pointerId,
+      button: event.button,
+      x: event.clientX,
+      y: event.clientY,
+    }
     event.currentTarget.setPointerCapture(event.pointerId)
   }
 
   const onPointerMove = (event: React.PointerEvent) => {
     const pointer = pointerRef.current
     if (!pointer || pointer.id !== event.pointerId) return
-    if (placingCustomMarker) return
+    if (placingCustomMarker && pointer.button === 0) return
     const current = transformRef.current
     transformRef.current = {
       ...current,
       x: current.x + event.clientX - pointer.x,
       y: current.y + event.clientY - pointer.y,
     }
-    pointerRef.current = { id: event.pointerId, x: event.clientX, y: event.clientY }
+    pointerRef.current = { ...pointer, x: event.clientX, y: event.clientY }
     scheduleTransform()
   }
 
@@ -354,7 +385,7 @@ export function MapViewport({
     const pointer = pointerRef.current
     if (!pointer || pointer.id !== event.pointerId) return
     pointerRef.current = null
-    if (!placingCustomMarker || !model || !atlas) return
+    if (pointer.button !== 0 || !placingCustomMarker || !model || !atlas) return
     const viewport = viewportRef.current
     if (!viewport) return
     const rect = viewport.getBoundingClientRect()
@@ -416,12 +447,42 @@ export function MapViewport({
     >
       {!model || !atlas ? (
         <section className={`drop-zone ${draggingFile ? "is-dragging" : ""}`}>
-          <Card className="w-[min(34rem,calc(100%-2rem))] border-2 border-dashed border-emerald-700/80 bg-card/95 shadow-2xl">
-            <CardContent className="grid gap-2 p-10 text-center">
+          <Card className="w-[min(40rem,calc(100%-2rem))] border-2 border-dashed border-emerald-700/80 bg-card/95 shadow-2xl">
+            <CardContent className="grid gap-2 p-8 text-center">
               <strong className="text-xl">Drop a survival save here</strong>
               <span className="text-sm text-muted-foreground">
                 or choose its <code>.db</code> file
               </span>
+              <Button className="mx-auto mt-2" onClick={onOpenFile}>
+                <FolderOpenIcon />
+                Choose save file
+              </Button>
+
+              <div className="mt-4 rounded-lg border bg-muted/45 p-3 text-left">
+                <p className="text-xs font-medium text-foreground">Where are my saves?</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  Open this directory, then choose your <code>User_&lt;SteamID&gt;</code> folder and go to <code>Save\Survival</code>.
+                </p>
+                <div className="mt-2 flex items-center gap-1.5 rounded-md bg-background/70 p-1.5 pl-2.5">
+                  <code className="min-w-0 flex-1 break-all text-[0.6875rem] text-foreground/85">
+                    {saveRootPath}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => void copySavePath()}
+                    aria-label="Copy Scrap Mechanic save directory path"
+                    data-copy-save-path
+                  >
+                    {savePathCopied ? <CheckIcon /> : <CopyIcon />}
+                    {savePathCopied ? "Copied" : "Copy path"}
+                  </Button>
+                </div>
+                <p className="mt-1.5 text-[0.6875rem] leading-relaxed text-muted-foreground">
+                  Paste the copied path into File Explorer's address bar. If several user folders exist, select the one belonging to your Steam account, then choose the save named in the game's Load Game menu.
+                </p>
+              </div>
               <small className="mt-2 text-muted-foreground">
                 Processed locally. Your original save is never modified or uploaded.
               </small>
@@ -435,14 +496,16 @@ export function MapViewport({
             <div className={`marker-layer${alwaysShowLabels ? " labels-always-visible" : ""}`}>
             {players.map((player) => (
               <div
-                className={`player-marker ${selectedKey === `player:${player.player_id}` ? "selected" : ""}`}
+                className={`player-marker${player.player_id === 1 ? " host-player" : ""}${selectedKey === `player:${player.player_id}` ? " selected" : ""}`}
                 key={`player:${player.player_id}`}
                 style={{
                   left: (player.x / 64 - model.bounds.xMin) * px,
                   top: (model.bounds.yMax + 1 - player.y / 64) * px,
                 } as React.CSSProperties}
                 title={`${player.label}: ${player.x.toFixed(1)}, ${player.y.toFixed(1)}, ${player.z.toFixed(1)}`}
-                onPointerDown={(event) => event.stopPropagation()}
+                onPointerDown={(event) => {
+                  if (event.button === 0) event.stopPropagation()
+                }}
                 onClick={() => onSelectMarker({
                   key: `player:${player.player_id}`,
                   worldX: player.x,
@@ -464,7 +527,9 @@ export function MapViewport({
                     "--marker-color": marker.color,
                   } as React.CSSProperties}
                   title={`${label}${marker.unlocked ? "" : " (locked)"}`}
-                  onPointerDown={(event) => event.stopPropagation()}
+                  onPointerDown={(event) => {
+                    if (event.button === 0) event.stopPropagation()
+                  }}
                   onClick={() => onSelectMarker(marker)}
                 >
                   <span>{label}</span>
@@ -481,7 +546,9 @@ export function MapViewport({
                   "--marker-color": marker.color,
                 } as React.CSSProperties}
                 title={marker.description ? `${marker.label}: ${marker.description}` : marker.label}
-                onPointerDown={(event) => event.stopPropagation()}
+                onPointerDown={(event) => {
+                  if (event.button === 0) event.stopPropagation()
+                }}
                 onClick={() => onSelectMarker(marker)}
               >
                 <span>{marker.label}</span>
@@ -537,7 +604,7 @@ export function MapViewport({
               <MinusIcon />
             </Button>
             <span
-              className="min-w-11 px-1 text-center text-[10px] tabular-nums text-muted-foreground"
+              className="min-w-11 px-1 text-center text-[0.625rem] tabular-nums text-muted-foreground"
               aria-label={`Zoom ${zoomPercent}%`}
               data-zoom-level
             >

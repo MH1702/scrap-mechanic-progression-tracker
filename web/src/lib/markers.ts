@@ -72,9 +72,12 @@ export function collectPoiMarkers(
       const isQuest =
         definition.category === "main_quest" ||
         definition.category === "side_quest"
-      const unlocked =
-        (definition.poiType === 101 && definition.category === "location") ||
-        (isQuest ? questUnlocked : placeUnlocked || questUnlocked)
+      const isLorenzoShip =
+        definition.poiType === 105 && definition.category === "location"
+      const unlocked = isLorenzoShip
+        ? questUnlocked
+        : (definition.poiType === 101 && definition.category === "location") ||
+          (isQuest ? questUnlocked : placeUnlocked || questUnlocked)
       if (mode === "unlocked" && !unlocked) continue
       const [worldX, worldY] = worldPoint(
         originX,

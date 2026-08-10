@@ -51,7 +51,7 @@ export function CustomMarkerEditor({
           <h2 className="font-heading text-sm font-semibold">
             {marker ? "Edit custom marker" : "New custom marker"}
           </h2>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[0.625rem] text-muted-foreground">
             {position.worldX.toFixed(1)}, {position.worldY.toFixed(1)}
           </p>
         </div>

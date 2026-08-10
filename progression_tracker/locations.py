@@ -194,6 +194,10 @@ POI_STORAGE_UID = bytes.fromhex("744526195c20a1a5fc53190a7bc43051")[::-1]
 # Serialized integer key for STORAGE_CHANNEL_LOGS (60). The game writes its
 # logbook UUID array through sm.storage.save on this engine-owned channel.
 LOG_STORAGE_KEY = bytes.fromhex("4c554100000001083c")
+# Serialized integer key for STORAGE_CHANNEL_RECIPEMANAGER (49). Its
+# ``unlockedRecipes`` table is the authoritative set shared by all players in
+# the world; reading it avoids inferring ownership from quest completion.
+RECIPE_STORAGE_KEY = bytes.fromhex("4c5541000000010831")
 _QUEST = re.compile(rb"quest_[a-z0-9_]+")
 def presentations(poi_type):
     """Every label/category/quest presentation attached to a POI type."""
@@ -310,6 +314,30 @@ def _unlocked_logs(save):
     return out
 
 
+def _unlocked_recipes(save):
+    """Return lower-case recipe UUIDs from Recipe Manager storage channel 49."""
+    out = set()
+    if "ScriptData" not in save._tables:
+        return out
+    rows = save.con.execute("SELECT data FROM ScriptData WHERE key=?",
+                            (RECIPE_STORAGE_KEY,))
+    for (blob,) in rows:
+        raw = unpack_blob(blob)
+        if not raw or raw[:3] != smlua.MAGIC:
+            continue
+        try:
+            value = smlua.loads(raw)
+        except Exception:
+            continue
+        recipes = value.get("unlockedRecipes") if isinstance(value, dict) else None
+        if not isinstance(recipes, dict):
+            continue
+        for item_id, unlocked in recipes.items():
+            if unlocked is True and isinstance(item_id, str):
+                out.add(item_id.lower())
+    return out
+
+
 def progression_state(save):
     """Browser-safe quest and POI state from a read-only open save."""
     active, completed = _quest_state(save)
@@ -318,6 +346,7 @@ def progression_state(save):
         "completedQuests": sorted(completed),
         "unlockedLogs": sorted(_unlocked_logs(save)),
         "unlockedPoiTypes": sorted(_unlocked_pois(save)),
+        "unlockedRecipes": sorted(_unlocked_recipes(save)),
     }
 
 

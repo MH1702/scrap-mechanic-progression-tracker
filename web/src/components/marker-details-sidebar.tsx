@@ -92,7 +92,7 @@ export function MarkerDetailsSidebar({
         {marker && atlas && (
           <figure className="mb-4">
             <MarkerTilePreview atlas={atlas} marker={marker} />
-            <figcaption className="mt-1.5 text-[10px] text-muted-foreground">
+            <figcaption className="mt-1.5 text-[0.625rem] text-muted-foreground">
               Top-down sample of the surrounding world tile
             </figcaption>
           </figure>

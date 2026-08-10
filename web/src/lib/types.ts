@@ -20,7 +20,7 @@ export interface Bounds {
 
 export interface Player {
   player_id: number
-  steam_id: number | null
+  steam_id: string | null
   world_id: number
   label: string
   x: number
@@ -33,6 +33,7 @@ export interface ProgressionState {
   completedQuests: string[]
   unlockedLogs: string[]
   unlockedPoiTypes: number[]
+  unlockedRecipes: string[]
 }
 
 export interface WorldModel {

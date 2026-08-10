@@ -87,7 +87,7 @@ class SaveFile(ScrapMapSaveFile):
         local_steam_id = int(match.group(1)) if match else None
         for player in players:
             if local_steam_id and player.get("steam_id") == local_steam_id:
-                player["label"] = "Host"
+                player["label"] = "You"
             else:
                 player["label"] = "Guest %d" % player["player_id"]
 

@@ -236,7 +236,7 @@ export function MarkerSidebar({
               <div className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 hover:bg-muted/60">
                 <span className="min-w-0">
                   <span className="block text-xs font-medium">Always show labels</span>
-                  <span className="block text-[10px] text-muted-foreground">
+                  <span className="block text-[0.625rem] text-muted-foreground">
                     Otherwise labels appear on hover.
                   </span>
                 </span>
@@ -253,7 +253,7 @@ export function MarkerSidebar({
               >
                 <span className="min-w-0">
                   <span className="block text-xs font-medium">Show undiscovered markers</span>
-                  <span className="block text-[10px] text-muted-foreground">
+                  <span className="block text-[0.625rem] text-muted-foreground">
                     May reveal locations and quests.
                   </span>
                 </span>
@@ -349,7 +349,7 @@ export function MarkerSidebar({
               forceExpanded={searching}
             >
               {filteredCustomMarkers.length === 0 ? (
-                <p className="px-2 py-2 text-[10px] text-muted-foreground">
+                <p className="px-2 py-2 text-[0.625rem] text-muted-foreground">
                   Add a marker, then click its position on the map.
                 </p>
               ) : filteredCustomMarkers.map((marker) => (
@@ -522,10 +522,10 @@ function MarkerGroup({
           <ChevronRightIcon
             className={`transition-transform ${expanded ? "rotate-90" : ""}`}
           />
-          <h3 className="truncate text-[11px] font-semibold tracking-wider uppercase">
+          <h3 className="truncate text-[0.6875rem] font-semibold tracking-wider uppercase">
             {title}
           </h3>
-          <span className="ml-auto text-[11px] tabular-nums">{count}</span>
+          <span className="ml-auto text-[0.6875rem] tabular-nums">{count}</span>
         </Button>
         <Button
           variant="ghost"
@@ -590,8 +590,8 @@ function SideQuestGroup({
           <ChevronRightIcon
             className={`transition-transform ${expanded ? "rotate-90" : ""}`}
           />
-          <h4 className="truncate text-[10px] font-semibold">{title}</h4>
-          <span className="ml-auto text-[10px] tabular-nums">{count}</span>
+          <h4 className="truncate text-[0.625rem] font-semibold">{title}</h4>
+          <span className="ml-auto text-[0.625rem] tabular-nums">{count}</span>
         </Button>
         <Button
           variant="ghost"
@@ -657,7 +657,7 @@ function MarkerRow({
         <span className="min-w-0 flex-1">
           <span className="block truncate text-xs font-medium">{label}</span>
           {detail && (
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
               {locked && <LockIcon className="size-2.5" />}
               {detail}
             </span>

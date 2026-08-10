@@ -1,8 +1,10 @@
-# Scrap Mechanic Progression Tracker
+# Scrap Mechanic Progression Tracker & Map Viewer
 
 An interactive browser map and progression companion for Scrap Mechanic
 survival saves. Drop a save into the page to render its overworld, players,
 locations, quests, growlabs, and your own custom markers.
+
+**Live tool:** https://mh1702.github.io/scrap-mechanic-progression-tracker/
 
 This is an unofficial, fan-made tool and is not affiliated with or endorsed by
 Axolot Games. Scrap Mechanic and related marks belong to their respective
