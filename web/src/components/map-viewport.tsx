@@ -453,7 +453,7 @@ export function MapViewport({
     >
       {!model || !atlas ? (
         <section className={`drop-zone ${draggingFile ? "is-dragging" : ""}`}>
-          <Card className="w-[min(40rem,calc(100%-2rem))] border-2 border-dashed border-emerald-700/80 bg-card/95 shadow-2xl">
+          <Card className="w-[min(40rem,calc(100%-2rem))] border-2 border-dashed border-blue-600/80 bg-card/95 shadow-2xl">
             <CardContent className="grid gap-2 p-8 text-center">
               <strong className="text-xl">Drop a survival save here</strong>
               <span className="text-sm text-muted-foreground">
