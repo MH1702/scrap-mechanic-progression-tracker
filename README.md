@@ -6,7 +6,7 @@ locations, quests, growlabs, and your own custom markers.
 
 **Live tool:** https://mh1702.github.io/scrap-mechanic-progression-tracker/
 
-<img width="2557" height="1304" alt="grafik" src="https://github.com/user-attachments/assets/fd53f18a-c782-4cfb-b12d-1e6a2cf68029" />
+<img width="2559" height="1308" alt="SMPT_Screenshot" src="https://github.com/user-attachments/assets/de4ebafb-5dc9-4191-9477-b3c3ae183f64" />
 
 This is an unofficial, fan-made tool and is not affiliated with or endorsed by
 Axolot Games. Scrap Mechanic and related marks belong to their respective
