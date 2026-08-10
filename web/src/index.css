@@ -259,6 +259,9 @@ body {
   transform: rotate(-45deg) translate(calc(-50% - 3px), calc(-100% - 25px));
 }
 
+.player-marker:hover,
+.poi-marker:hover { z-index: 100; }
+
 .player-marker:hover span,
 .poi-marker:hover span { opacity: 1; }
 
