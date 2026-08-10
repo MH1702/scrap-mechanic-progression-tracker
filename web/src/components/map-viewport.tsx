@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from "react"
-import { CheckIcon, CopyIcon, FolderOpenIcon, Maximize2Icon, MinusIcon, PlusIcon } from "lucide-react"
+import { CheckIcon, CopyIcon, FolderOpenIcon, Maximize2Icon, MinusIcon, PlusIcon, UserRoundIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -518,6 +518,7 @@ export function MapViewport({
                   worldY: player.y,
                 })}
               >
+                <UserRoundIcon className="player-symbol" />
                 <span>{player.label}</span>
               </div>
             ))}

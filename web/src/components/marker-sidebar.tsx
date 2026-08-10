@@ -601,7 +601,7 @@ function MarkerGroup({
   forceExpanded?: boolean
   children: React.ReactNode
 }) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(() => visibility === "none")
   const allVisible = visibility === "all"
   const expanded = forceExpanded || !collapsed
 
@@ -669,7 +669,7 @@ function SideQuestGroup({
   forceExpanded?: boolean
   children: React.ReactNode
 }) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(() => visibility === "none")
   const allVisible = visibility === "all"
   const expanded = forceExpanded || !collapsed
 

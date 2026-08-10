@@ -139,6 +139,19 @@ body {
     0 4px 12px 3px #000d;
 }
 
+.player-marker .player-symbol {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  color: #fff;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 1px 1px #000);
+  pointer-events: none;
+}
+
 .poi-marker.custom,
 .poi-marker.world_feature,
 .poi-marker.beacon {
