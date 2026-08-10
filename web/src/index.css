@@ -161,7 +161,7 @@ body {
   border: 3px solid #050907;
   background: #050706;
   box-shadow:
-    0 0 0 2px #f4f6f5,
+    0 0 0 2px #9ca3af,
     0 0 0 4px #050907,
     0 4px 12px 3px #000d;
 }
@@ -195,7 +195,7 @@ body {
 }
 
 .poi-marker.world_feature.oil_pond .marker-symbol {
-  color: #f4f6f5;
+  color: #d1d5db;
 }
 
 .poi-marker.warehouse-completed::after {

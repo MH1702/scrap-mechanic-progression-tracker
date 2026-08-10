@@ -126,6 +126,7 @@ export function MapViewport({
 
     const width = viewport.clientWidth
     const height = viewport.clientHeight
+    if (width <= 0 || height <= 0) return
     const pixelRatio = Math.min(window.devicePixelRatio || 1, 2)
     const backingWidth = Math.max(1, Math.round(width * pixelRatio))
     const backingHeight = Math.max(1, Math.round(height * pixelRatio))
@@ -212,7 +213,7 @@ export function MapViewport({
   const fitMap = useCallback(() => {
     const viewport = viewportRef.current
     const world = worldLevelsRef.current[0]?.canvas
-    if (!model || !viewport || !world) return
+    if (!model || !viewport || !world || viewport.clientWidth <= 0 || viewport.clientHeight <= 0) return
     const margin = 28
     const scale = Math.min(
       (viewport.clientWidth - margin * 2) / world.width,
@@ -324,7 +325,11 @@ export function MapViewport({
   useEffect(() => {
     const viewport = viewportRef.current
     if (!viewport) return
-    const observer = new ResizeObserver(() => model && scheduleTransform())
+    const observer = new ResizeObserver(() => {
+      if (model && viewportRef.current && viewportRef.current.clientWidth > 0 && viewportRef.current.clientHeight > 0) {
+        scheduleTransform()
+      }
+    })
     observer.observe(viewport)
     return () => observer.disconnect()
   }, [model, scheduleTransform])
