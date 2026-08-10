@@ -1,0 +1,42 @@
+name: Deploy Scrap Mechanic Progression Tracker
+
+on:
+  # Publication is intentionally explicit. Ordinary pushes never deploy.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Build static site
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-web
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
