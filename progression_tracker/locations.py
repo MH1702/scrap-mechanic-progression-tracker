@@ -172,10 +172,10 @@ DEFAULT_MARKER_COLORS = {
 # than from the game's unique POI/quest registries. Their stable type is used
 # by the web sidebar to toggle every instance together.
 WORLD_FEATURE_COLORS = {
-    "chemical_pond": "#8ccc4a",
-    "oil_pond": "#c58a45",
+    "chemical_pond": "#ff5ca8",
+    "oil_pond": "#111111",
     "warehouse": "#788cff",
-    "schematic_bot": "#e86acb",
+    "schematic_bot": "#35d9f2",
 }
 
 POI_MARKER_COLORS = {

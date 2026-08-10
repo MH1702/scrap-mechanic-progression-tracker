@@ -9,6 +9,7 @@ import { CheckIcon, CopyIcon, FolderOpenIcon, Maximize2Icon, MinusIcon, PlusIcon
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { MarkerIcon, markerIconComponent } from "@/components/marker-icon"
 import { markerHoverLabel } from "@/lib/markers"
 import type {
   Atlas,
@@ -519,7 +520,7 @@ export function MapViewport({
               const label = markerHoverLabel(marker)
               return (
                 <div
-                  className={`poi-marker ${marker.category}${marker.unlocked ? "" : " locked"}${selectedKey === marker.key ? " selected" : ""}`}
+                  className={`poi-marker ${marker.category} ${marker.featureType ?? ""}${markerIconComponent(marker) ? " has-icon" : ""}${marker.warehouseCompleted ? " warehouse-completed" : ""}${marker.unlocked ? "" : " locked"}${selectedKey === marker.key ? " selected" : ""}`}
                   key={marker.key}
                   style={{
                     left: (marker.worldX / 64 - model.bounds.xMin) * px,
@@ -532,6 +533,7 @@ export function MapViewport({
                   }}
                   onClick={() => onSelectMarker(marker)}
                 >
+                  <MarkerIcon marker={marker} className="marker-symbol" />
                   <span>{label}</span>
                 </div>
               )

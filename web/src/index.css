@@ -127,11 +127,43 @@ body {
 .poi-marker.growlab { --marker-color: #ffd447; }
 .poi-marker.locked { opacity: 0.72; filter: saturate(0.5); }
 
+.poi-marker.has-icon:not(.world_feature) {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--marker-color);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--marker-color) 25%, #101512);
+  box-shadow:
+    0 0 0 2px #050907,
+    0 0 0 4px color-mix(in srgb, var(--marker-color) 80%, transparent),
+    0 4px 12px 3px #000d;
+}
+
 .poi-marker.custom,
 .poi-marker.world_feature,
 .poi-marker.beacon {
   transform: translate(-50%, -50%) scale(var(--marker-scale, 1));
   border-radius: 50%;
+}
+
+.poi-marker.world_feature {
+  width: 30px;
+  height: 30px;
+  border: 3px solid var(--marker-color);
+  background: color-mix(in srgb, var(--marker-color) 25%, #101512);
+  box-shadow:
+    0 0 0 2px #050907,
+    0 0 0 4px color-mix(in srgb, var(--marker-color) 80%, transparent),
+    0 4px 12px 3px #000d;
+}
+
+.poi-marker.world_feature.oil_pond {
+  border: 3px solid #050907;
+  background: #050706;
+  box-shadow:
+    0 0 0 2px #f4f6f5,
+    0 0 0 4px #050907,
+    0 4px 12px 3px #000d;
 }
 
 .poi-marker.beacon::after {
@@ -140,6 +172,48 @@ body {
   inset: 3px;
   border-radius: 50%;
   background: #fff;
+  box-shadow: 0 0 0 1px #050907;
+}
+
+.marker-symbol {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  color: var(--marker-color);
+  stroke-width: 2.6;
+  filter: drop-shadow(0 1px 1px #000);
+  pointer-events: none;
+}
+
+.poi-marker.has-icon:not(.world_feature) .marker-symbol {
+  width: 17px;
+  height: 17px;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.poi-marker.world_feature.oil_pond .marker-symbol {
+  color: #f4f6f5;
+}
+
+.poi-marker.warehouse-completed::after {
+  content: "✓";
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: grid;
+  width: 13px;
+  height: 13px;
+  place-items: center;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  background: #20a866;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
   box-shadow: 0 0 0 1px #050907;
 }
 
@@ -160,9 +234,16 @@ body {
 }
 
 .poi-marker.custom span,
-.poi-marker.world_feature span,
 .poi-marker.beacon span {
   transform: translate(-50%, calc(-100% - 18px));
+}
+
+.poi-marker.world_feature span {
+  transform: translate(-50%, calc(-100% - 25px));
+}
+
+.poi-marker.has-icon:not(.world_feature) span {
+  transform: rotate(-45deg) translate(calc(-50% - 3px), calc(-100% - 25px));
 }
 
 .player-marker:hover span,

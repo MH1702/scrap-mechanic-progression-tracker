@@ -3,6 +3,7 @@ import { CrosshairIcon, MapPinIcon, PencilIcon, Trash2Icon, UserRoundIcon, XIcon
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { MarkerIcon, markerIconColor, markerIconComponent } from "@/components/marker-icon"
 import { Separator } from "@/components/ui/separator"
 import { markerHoverLabel } from "@/lib/markers"
 import type { Atlas, CustomMarker, MarkerTarget, Player, PoiMarker } from "@/lib/types"
@@ -59,10 +60,17 @@ export function MarkerDetailsSidebar({
     >
       <div className="flex items-start gap-3 px-4 py-3">
         <span
-          className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg text-white shadow-sm"
-          style={{ backgroundColor: color }}
+          className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg border-2 text-white shadow-sm"
+          style={marker && markerIconComponent(marker) ? {
+            borderColor: markerIconColor(marker),
+            backgroundColor: `color-mix(in srgb, ${marker.color} 25%, #101512)`,
+          } : { borderColor: color, backgroundColor: color }}
         >
-          {marker || customMarker ? <MapPinIcon className="size-4" /> : <UserRoundIcon className="size-4" />}
+          {marker && markerIconComponent(marker)
+            ? <MarkerIcon marker={marker} className="size-4" />
+            : marker || customMarker
+              ? <MapPinIcon className="size-4" />
+              : <UserRoundIcon className="size-4" />}
         </span>
         <div className="min-w-0 flex-1">
           <h2 className="font-heading text-sm font-semibold leading-snug">{title}</h2>
@@ -119,6 +127,14 @@ export function MarkerDetailsSidebar({
                     : "Area"}
               </dt>
               <dd className="text-right font-medium">{marker.detail}</dd>
+            </>
+          )}
+          {marker?.featureType === "warehouse" && (
+            <>
+              <dt className="text-muted-foreground">Status</dt>
+              <dd className="text-right font-medium">
+                {marker.warehouseCompleted ? "Completed / exploded" : "Uncompleted"}
+              </dd>
             </>
           )}
           <dt className="text-muted-foreground">World X</dt>

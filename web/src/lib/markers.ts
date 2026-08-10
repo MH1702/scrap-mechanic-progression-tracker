@@ -29,7 +29,11 @@ function tileOrigin(
 }
 
 export function markerLabel(marker: PoiMarker): string {
-  return marker.detail ? `${marker.label} · ${marker.detail}` : marker.label
+  const parts = [marker.label, marker.detail]
+  if (marker.featureType === "warehouse") {
+    parts.push(marker.warehouseCompleted ? "Exploded" : "Uncompleted")
+  }
+  return parts.filter(Boolean).join(" · ")
 }
 
 export function markerHoverLabel(marker: PoiMarker): string {
@@ -51,6 +55,12 @@ export function collectPoiMarkers(
     ...(model.progression?.completedQuests ?? []),
   ])
   const logs = new Set(model.progression?.unlockedLogs ?? [])
+  const warehouses = new Map(
+    (model.warehouses ?? []).map((warehouse) => [
+      `${warehouse.zero_cell_x}:${warehouse.zero_cell_y}`,
+      warehouse,
+    ]),
+  )
   const result: PoiMarker[] = []
   for (const beacon of model.beacons ?? []) {
     result.push({
@@ -106,6 +116,9 @@ export function collectPoiMarkers(
         definition.localX,
         definition.localY,
       )
+      const warehouseCompleted = definition.featureType === "warehouse"
+        ? warehouses.get(`${originX}:${originY}`)?.destroyed ?? false
+        : undefined
       result.push({
         ...definition,
         key: `poi:${definition.poiType}:${definition.category}:${definition.featureType ?? definition.label}:${originX}:${originY}:${definition.localX}:${definition.localY}:${uuid}`,
@@ -113,6 +126,7 @@ export function collectPoiMarkers(
         unlocked,
         worldX,
         worldY,
+        warehouseCompleted,
       })
     }
   }

@@ -43,6 +43,7 @@ export interface WorldModel {
   cells: WorldCell[]
   players: Player[]
   beacons: Beacon[]
+  warehouses: WarehouseState[]
   progression: ProgressionState
   game: { gametick: number | null }
 }
@@ -57,6 +58,17 @@ export interface Beacon {
   icon_index: number
   color_index: number
   color: string
+}
+
+export interface WarehouseState {
+  index: number
+  world_id: number
+  zero_cell_x: number
+  zero_cell_y: number
+  levels: number
+  destroyed: boolean
+  console_destroyed: boolean
+  is_quest_warehouse: boolean
 }
 
 export interface PoiDefinition {
@@ -109,6 +121,7 @@ export interface PoiMarker extends PoiDefinition {
   unlocked: boolean
   worldX: number
   worldY: number
+  warehouseCompleted?: boolean
 }
 
 export interface MarkerTarget {

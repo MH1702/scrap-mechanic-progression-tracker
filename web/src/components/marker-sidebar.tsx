@@ -1,17 +1,22 @@
 import {
   ChevronRightIcon,
+  AtomIcon,
+  DropletIcon,
   EyeIcon,
   EyeOffIcon,
   LockIcon,
+  FlaskConicalIcon,
   MapPinIcon,
   PlusIcon,
   SearchIcon,
   UserRoundIcon,
+  WarehouseIcon,
   XIcon,
 } from "lucide-react"
 import { useState } from "react"
 
 import { Badge } from "@/components/ui/badge"
+import { MarkerIcon } from "@/components/marker-icon"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -54,11 +59,12 @@ const worldFeatureTypes: Array<{
   type: WorldFeatureType
   label: string
   color: string
+  icon: typeof DropletIcon
 }> = [
-  { type: "chemical_pond", label: "Chemical Ponds", color: "#8ccc4a" },
-  { type: "oil_pond", label: "Oil Ponds", color: "#c58a45" },
-  { type: "warehouse", label: "Warehouses", color: "#788cff" },
-  { type: "schematic_bot", label: "Schematic Bots", color: "#e86acb" },
+  { type: "chemical_pond", label: "Chemical Ponds", color: "#ff5ca8", icon: FlaskConicalIcon },
+  { type: "oil_pond", label: "Oil Ponds", color: "#111111", icon: DropletIcon },
+  { type: "warehouse", label: "Warehouses", color: "#788cff", icon: WarehouseIcon },
+  { type: "schematic_bot", label: "Schematic Bots", color: "#35d9f2", icon: AtomIcon },
 ]
 
 // GenericBuilderQuest.lua explicitly identifies these six quests as the
@@ -432,6 +438,7 @@ export function MarkerSidebar({
               forceExpanded={searching}
             >
               {matchingWorldFeatureTypes.map((feature) => {
+                const FeatureIcon = feature.icon
                 const items = allWorldFeatureMarkers.filter(
                   (marker) => marker.featureType === feature.type,
                 )
@@ -443,6 +450,10 @@ export function MarkerSidebar({
                     key={feature.type}
                     active={false}
                     color={feature.color}
+                    icon={<FeatureIcon
+                      className="size-2.5"
+                      style={{ color: feature.type === "oil_pond" ? "#f4f6f5" : feature.color }}
+                    />}
                     label={feature.label}
                     detail={`${items.length} marker${items.length === 1 ? "" : "s"}`}
                     visible={visibility !== "none"}
@@ -477,6 +488,7 @@ export function MarkerSidebar({
                       key={marker.key}
                       active={selectedKey === marker.key}
                       color={marker.color}
+                      icon={<MarkerIcon marker={marker} className="size-2.5" />}
                       label={markerLabel(marker)}
                       detail={marker.unlocked ? undefined : "Locked"}
                       locked={!marker.unlocked}
@@ -534,6 +546,7 @@ export function MarkerSidebar({
                             key={marker.key}
                             active={selectedKey === marker.key}
                             color={marker.color}
+                            icon={<MarkerIcon marker={marker} className="size-2.5" />}
                             label={markerLabel(marker)}
                             detail={marker.unlocked ? undefined : "Locked"}
                             locked={!marker.unlocked}
@@ -737,7 +750,10 @@ function MarkerRow({
       >
         <span
           className="grid size-4 shrink-0 place-items-center rounded-full"
-          style={{ backgroundColor: color }}
+          style={icon ? {
+            backgroundColor: `color-mix(in srgb, ${color} 25%, #101512)`,
+            boxShadow: `inset 0 0 0 1.5px ${color}`,
+          } : { backgroundColor: color }}
         >
           {icon}
         </span>

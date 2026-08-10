@@ -12,6 +12,7 @@ from progression_tracker.save_reader import (
     SaveFile,
     _decode_beacon,
     _decode_player_record,
+    _decode_warehouse,
 )
 
 
@@ -99,6 +100,35 @@ class BeaconRecordTests(unittest.TestCase):
             "world": (UD_VEC3, 1),
             "position": (0.0, 0.0, 0.0),
             "iconData": {"iconIndex": 1, "colorIndex": 1},
+        }))
+
+
+class WarehouseRecordTests(unittest.TestCase):
+    def test_decodes_exploded_warehouse_at_its_zero_cell(self):
+        warehouse = _decode_warehouse({
+            "index": 4,
+            "world": (UD_WORLD, 1),
+            "zeroCell": {"x": 51, "y": -18},
+            "maxLevels": 4,
+            "destroyed": True,
+            "consoleDestroyed": True,
+            "isQuestWarehouse": False,
+        })
+
+        self.assertEqual(warehouse["index"], 4)
+        self.assertEqual(
+            (warehouse["zero_cell_x"], warehouse["zero_cell_y"]),
+            (51, -18),
+        )
+        self.assertTrue(warehouse["destroyed"])
+        self.assertTrue(warehouse["console_destroyed"])
+        self.assertFalse(warehouse["is_quest_warehouse"])
+
+    def test_rejects_warehouse_without_stable_position(self):
+        self.assertIsNone(_decode_warehouse({
+            "index": 1,
+            "world": (UD_WORLD, 1),
+            "maxLevels": 2,
         }))
 
 

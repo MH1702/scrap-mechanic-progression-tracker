@@ -12,6 +12,7 @@ from smmap.savefile import _parse_envelope, unpack_blob
 
 PLAYER_RECORD_UID = bytes.fromhex("58a346010876f0b8984856f7e27fce67")[::-1]
 BEACON_STORAGE_KEY = bytes.fromhex("4c5541000000010823")
+WAREHOUSE_STORAGE_KEY = bytes.fromhex("4c554100000001080a")
 BEACON_COLORS = (
     "#4f6cff", "#af7dff", "#00ffff", "#90ff78",
     "#ffd046", "#ffffc0", "#ff6619", "#ff3737",
@@ -32,6 +33,7 @@ class SaveFile(ScrapMapSaveFile):
         self._overworld_id = None
         self._player_cache = None
         self._beacon_cache = None
+        self._warehouse_cache = None
 
     def cell_data(self):
         """Return overworld terrain and retain the database world identifier."""
@@ -142,9 +144,40 @@ class SaveFile(ScrapMapSaveFile):
                        if beacon["world_id"] == world_id]
         return [dict(beacon) for beacon in beacons]
 
+    def warehouses(self, world_id=None):
+        """Return Warehouse Manager records, including explosion state."""
+        if self._warehouse_cache is None:
+            found = []
+            if "ScriptData" in self._tables:
+                rows = self.con.execute(
+                    "SELECT data FROM ScriptData WHERE key=?",
+                    (WAREHOUSE_STORAGE_KEY,),
+                )
+                for (blob,) in rows:
+                    raw = unpack_blob(blob)
+                    if not raw or raw[:3] != smlua.MAGIC:
+                        continue
+                    try:
+                        value = _loads_beacon_storage(raw)
+                    except Exception:
+                        continue
+                    if not isinstance(value, dict):
+                        continue
+                    for record in value.values():
+                        warehouse = _decode_warehouse(record)
+                        if warehouse is not None:
+                            found.append(warehouse)
+            found.sort(key=lambda warehouse: warehouse["index"])
+            self._warehouse_cache = found
+        warehouses = self._warehouse_cache
+        if world_id is not None:
+            warehouses = [warehouse for warehouse in warehouses
+                          if warehouse["world_id"] == world_id]
+        return [dict(warehouse) for warehouse in warehouses]
+
 
 def _loads_beacon_storage(data):
-    """Decode Lua values plus the three engine userdata types Beacons save."""
+    """Decode manager storage values containing supported engine userdata."""
     if data[:3] != smlua.MAGIC:
         raise ValueError("not a LUA blob")
     return _beacon_value(BitReader(data, 7 * 8))
@@ -183,9 +216,10 @@ def _beacon_value(reader):
             return str(smlua.Uuid(reader.bytes(16)[::-1]))
         if kind == UD_VEC3:
             return (reader.f32(), reader.f32(), reader.f32())
-        if kind in (UD_SHAPE, UD_WORLD):
-            return (kind, reader.u32())
-        raise smlua.UnknownTag(0x64000000 | kind, reader.pos - 40)
+        # Other persisted engine objects in these manager channels (World,
+        # Shape, ScriptableObject) are stable 32-bit references. Only their id
+        # is needed to filter records or skip non-positional fields.
+        return (kind, reader.u32())
     raise smlua.UnknownTag(tag, reader.pos - 8)
 
 
@@ -222,6 +256,36 @@ def _decode_beacon(record_id, record):
         "icon_index": icon_index,
         "color_index": color_index,
         "color": color,
+    }
+
+
+def _decode_warehouse(record):
+    if not isinstance(record, dict):
+        return None
+    world = record.get("world")
+    zero_cell = record.get("zeroCell")
+    if (not isinstance(world, tuple) or len(world) != 2
+            or world[0] != UD_WORLD or not isinstance(zero_cell, dict)):
+        return None
+    try:
+        index = int(record.get("index"))
+        world_id = int(world[1])
+        zero_cell_x = int(zero_cell.get("x"))
+        zero_cell_y = int(zero_cell.get("y"))
+        levels = int(record.get("maxLevels"))
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if index <= 0 or world_id <= 0 or levels <= 0:
+        return None
+    return {
+        "index": index,
+        "world_id": world_id,
+        "zero_cell_x": zero_cell_x,
+        "zero_cell_y": zero_cell_y,
+        "levels": levels,
+        "destroyed": record.get("destroyed") is True,
+        "console_destroyed": record.get("consoleDestroyed") is True,
+        "is_quest_warehouse": record.get("isQuestWarehouse") is True,
     }
 
 
