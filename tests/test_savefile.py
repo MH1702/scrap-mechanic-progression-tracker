@@ -6,7 +6,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from progression_tracker.save_reader import SaveFile, _decode_player_record
+from progression_tracker.save_reader import (
+    UD_VEC3,
+    UD_WORLD,
+    SaveFile,
+    _decode_beacon,
+    _decode_player_record,
+)
 
 
 class ReadOnlySaveTests(unittest.TestCase):
@@ -70,6 +76,30 @@ class PlayerRecordTests(unittest.TestCase):
 
         self.assertEqual(players[0]["label"], "You")
         self.assertEqual(players[1]["label"], "Guest 7")
+
+
+class BeaconRecordTests(unittest.TestCase):
+    def test_decodes_position_icon_and_ingame_color(self):
+        beacon = _decode_beacon("3683", {
+            "world": (UD_WORLD, 1),
+            "position": (92.375, -2187.75, 20.5),
+            "iconData": {"iconIndex": 19, "colorIndex": 3},
+        })
+
+        self.assertEqual(beacon["id"], 3683)
+        self.assertEqual(beacon["world_id"], 1)
+        self.assertEqual(beacon["color"], "#00ffff")
+        self.assertEqual(beacon["icon_index"], 19)
+        self.assertEqual((beacon["x"], beacon["y"], beacon["z"]),
+                         (92.375, -2187.75, 20.5))
+
+    def test_rejects_malformed_or_non_world_beacons(self):
+        self.assertIsNone(_decode_beacon("1", {}))
+        self.assertIsNone(_decode_beacon("1", {
+            "world": (UD_VEC3, 1),
+            "position": (0.0, 0.0, 0.0),
+            "iconData": {"iconIndex": 1, "colorIndex": 1},
+        }))
 
 
 if __name__ == "__main__":

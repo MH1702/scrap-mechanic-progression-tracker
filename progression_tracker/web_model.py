@@ -16,6 +16,7 @@ def decode(path):
             raise ValueError("This save has no overworld terrain data.")
         world_id = save.overworld_id()
         players = save.players(world_id=world_id)
+        beacons = save.beacons(world_id=world_id)
         info = save.game_info()
         progression = progression_state(save)
 
@@ -54,6 +55,7 @@ def decode(path):
         "seed": cell_data.get("seed"),
         "cells": cells,
         "players": players,
+        "beacons": beacons,
         "progression": progression,
         "game": {"gametick": info.get("gametick")},
     }

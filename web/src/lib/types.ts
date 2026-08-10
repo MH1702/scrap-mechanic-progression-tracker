@@ -1,5 +1,6 @@
 export type MarkerMode = "unlocked" | "all"
-export type PoiCategory = "location" | "main_quest" | "side_quest" | "growlab"
+export type PoiCategory = "location" | "main_quest" | "side_quest" | "growlab" | "world_feature" | "beacon"
+export type WorldFeatureType = "chemical_pond" | "oil_pond" | "warehouse" | "schematic_bot"
 export type MarkerCategory = "players" | PoiCategory
 
 export type WorldCell = [
@@ -41,14 +42,28 @@ export interface WorldModel {
   seed: number | null
   cells: WorldCell[]
   players: Player[]
+  beacons: Beacon[]
   progression: ProgressionState
   game: { gametick: number | null }
+}
+
+export interface Beacon {
+  id: number
+  world_id: number
+  label: string
+  x: number
+  y: number
+  z: number
+  icon_index: number
+  color_index: number
+  color: string
 }
 
 export interface PoiDefinition {
   poiType: number
   label: string
   category: PoiCategory
+  featureType?: WorldFeatureType
   color: string
   quest: string | null
   log: string | null

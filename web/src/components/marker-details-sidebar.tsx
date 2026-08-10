@@ -23,6 +23,8 @@ const categoryLabels = {
   growlab: "Growlab",
   main_quest: "Main Quest",
   side_quest: "Side Quest",
+  world_feature: "World Feature",
+  beacon: "Beacon",
 } as const
 
 export function MarkerDetailsSidebar({
@@ -68,7 +70,7 @@ export function MarkerDetailsSidebar({
             <Badge variant="secondary">
               {marker ? categoryLabels[marker.category] : customMarker ? "Custom Marker" : "Player"}
             </Badge>
-            {marker && (
+            {marker && marker.category !== "world_feature" && marker.category !== "beacon" && (
               <Badge variant={marker.unlocked ? "outline" : "secondary"}>
                 {marker.unlocked ? "Unlocked" : "Undiscovered"}
               </Badge>
@@ -89,7 +91,7 @@ export function MarkerDetailsSidebar({
       <Separator />
 
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        {marker && atlas && (
+        {marker && atlas && marker.tileUuid && (
           <figure className="mb-4">
             <MarkerTilePreview atlas={atlas} marker={marker} />
             <figcaption className="mt-1.5 text-[0.625rem] text-muted-foreground">
@@ -108,7 +110,13 @@ export function MarkerDetailsSidebar({
           {marker?.detail && (
             <>
               <dt className="text-muted-foreground">
-                {marker.category.endsWith("quest") ? "Destination" : "Area"}
+                {marker.category.endsWith("quest")
+                  ? "Destination"
+                  : marker.category === "world_feature"
+                    ? "Details"
+                    : marker.category === "beacon"
+                      ? "Appearance"
+                    : "Area"}
               </dt>
               <dd className="text-right font-medium">{marker.detail}</dd>
             </>

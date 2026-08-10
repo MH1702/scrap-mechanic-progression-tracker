@@ -168,6 +168,16 @@ DEFAULT_MARKER_COLORS = {
     "growlab": "#ffd447",
 }
 
+# Repeatable landmarks are derived from each generated terrain tile rather
+# than from the game's unique POI/quest registries. Their stable type is used
+# by the web sidebar to toggle every instance together.
+WORLD_FEATURE_COLORS = {
+    "chemical_pond": "#8ccc4a",
+    "oil_pond": "#c58a45",
+    "warehouse": "#788cff",
+    "schematic_bot": "#e86acb",
+}
+
 POI_MARKER_COLORS = {
     (101, "location"): "#a970ff",
     (102, "location"): "#61d46e",
@@ -413,21 +423,103 @@ def _tile_origin(cell_x, cell_y, rotation, x_offset, y_offset):
     return cell_x - x_offset, cell_y - y_offset
 
 
-def _prefab_point(tile, path_fragment):
+def _prefab_point(tile, path_fragment, required_tag=None):
     """Position of the first prefab whose path contains ``path_fragment``."""
+    points = _prefab_points(tile, path_fragment, required_tag)
+    return points[0] if points else None
+
+
+def _prefab_points(tile, path_fragment, required_tag=None):
+    """Positions of all matching prefabs embedded in a terrain tile."""
+    path_fragment = path_fragment.replace("\\", "/").lower()
     try:
         with open(tile.tileson, "r", encoding="utf-8") as f:
             entities = json.load(f).get("entities") or {}
-    except (OSError, ValueError):
-        return None
+    except (AttributeError, OSError, ValueError):
+        return ()
+    points = []
     for prefab in entities.get("prefabs") or []:
         path = prefab.get("path", "").replace("\\", "/").lower()
         if path_fragment not in path:
             continue
+        if required_tag is not None:
+            tags = {str(tag).lower() for tag in prefab.get("tags") or []}
+            if required_tag.lower() not in tags:
+                continue
         position = (prefab.get("transform") or {}).get("position")
         if isinstance(position, list) and len(position) >= 2:
-            return float(position[0]), float(position[1])
-    return None
+            points.append((float(position[0]), float(position[1])))
+    return tuple(points)
+
+
+def tile_feature_markers(tile):
+    """Return repeatable overworld landmarks embedded in ``tile``.
+
+    Resource prefabs identify every pond while names identify the finite
+    station and warehouse tile families. Prefab transforms provide an exact
+    anchor on the source, station, or warehouse entrance. This is deliberately
+    separate from POI ids: these landmarks may occur any number of times in a
+    generated world and have no discovery/unlock state.
+    """
+    name = getattr(tile, "name", "") or ""
+    lowered = name.lower()
+    feature_type = label = detail = path_fragment = required_tag = None
+
+    # Resource sources are identified by their actual liquid prefab. This
+    # includes chemical plants, Silo District, random desert oil sources, and
+    # tiles containing several distinct ponds.
+    for resource_type, resource_label, fragment in (
+        ("chemical_pond", "Chemical Pond", "environment_prefabs/chemicals.prefab"),
+        ("oil_pond", "Oil Pond", "environment_prefabs/oil.prefab"),
+    ):
+        points = _prefab_points(tile, fragment)
+        if points:
+            return tuple({
+                "poi_type": 0,
+                "label": resource_label,
+                "category": "world_feature",
+                "feature_type": resource_type,
+                "color": WORLD_FEATURE_COLORS[resource_type],
+                "quest": None,
+                "detail": None,
+                "local_x": point[0],
+                "local_y": point[1],
+            } for point in points)
+
+    if lowered.startswith("schematicstation_"):
+        feature_type, label = "schematic_bot", "Schematic Bot"
+        path_fragment = "ap_partunlockstation_01.prefab"
+    else:
+        warehouse = re.match(r"warehouse_exterior_(\d+)floors_", lowered)
+        if warehouse:
+            levels = int(warehouse.group(1))
+            feature_type = "warehouse"
+            if lowered.endswith("_quest"):
+                label = "Trashbot/Story Warehouse"
+                detail = "%d levels · Trashbot arena" % levels
+            else:
+                label = "Warehouse"
+                detail = "%d levels" % levels
+            path_fragment = "warehouse_elevator_exterior_01.prefab"
+            required_tag = "entrance"
+
+    if feature_type is None:
+        return ()
+    local = _prefab_point(tile, path_fragment, required_tag)
+    if local is None:
+        local = (max(getattr(tile, "cells_x", 1), 1) * 32.0,
+                 max(getattr(tile, "cells_y", 1), 1) * 32.0)
+    return ({
+        "poi_type": 0,
+        "label": label,
+        "category": "world_feature",
+        "feature_type": feature_type,
+        "color": WORLD_FEATURE_COLORS[feature_type],
+        "quest": None,
+        "detail": detail,
+        "local_x": local[0],
+        "local_y": local[1],
+    },)
 
 
 def _presentation_point(tile, poi_type, category, quest=None):
@@ -505,9 +597,29 @@ def collect(game_dir, tile_index, cell_data, save):
                         "x": world_x,
                         "y": world_y,
                     })
+    feature_definitions = {}
     for cy, row in uids.items():
         for cx, uid in row.items():
-            definitions = OVERWORLD_TILE_MARKERS.get(str(uid).lower())
+            definitions = [
+                {
+                    "poi_type": 0,
+                    "label": label,
+                    "category": category,
+                    "feature_type": None,
+                    "color": marker_color(0, category),
+                    "quest": quest,
+                    "detail": detail,
+                    "local_x": local_x,
+                    "local_y": local_y,
+                }
+                for label, category, quest, detail, local_x, local_y
+                in OVERWORLD_TILE_MARKERS.get(str(uid).lower(), ())
+            ]
+            tile = getattr(tile_index, "by_uuid", {}).get(str(uid))
+            if tile is not None:
+                if str(uid) not in feature_definitions:
+                    feature_definitions[str(uid)] = tile_feature_markers(tile)
+                definitions.extend(feature_definitions[str(uid)])
             if not definitions:
                 continue
             rotation = int(rotations.get(cy, {}).get(cx, 0) or 0) & 3
@@ -519,17 +631,20 @@ def collect(game_dir, tile_index, cell_data, save):
             if placement in seen:
                 continue
             seen.add(placement)
-            for label, category, quest, detail, local_x, local_y in definitions:
+            for definition in definitions:
                 world_x, world_y = _world_point(
-                    origin_x, origin_y, rotation, local_x, local_y)
+                    origin_x, origin_y, rotation,
+                    definition["local_x"], definition["local_y"])
                 found.append({
-                    "poi_type": 0,
-                    "label": label,
-                    "category": category,
-                    "color": marker_color(0, category),
-                    "quest": quest,
-                    "detail": detail,
-                    "unlocked": quest in unlocked_quests,
+                    "poi_type": definition["poi_type"],
+                    "label": definition["label"],
+                    "category": definition["category"],
+                    "feature_type": definition["feature_type"],
+                    "color": definition["color"],
+                    "quest": definition["quest"],
+                    "detail": definition["detail"],
+                    "unlocked": (definition["category"] == "world_feature"
+                                 or definition["quest"] in unlocked_quests),
                     "x": world_x,
                     "y": world_y,
                 })

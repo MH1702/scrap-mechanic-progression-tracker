@@ -164,6 +164,20 @@ def build(game_dir, out_dir, px=32, page_size=4096, padding=2,
                 "localX": local_x,
                 "localY": local_y,
             })
+    for uid, tile in index.by_uuid.items():
+        for definition in locations.tile_feature_markers(tile):
+            marker_tiles.setdefault(uid, []).append({
+                "poiType": definition["poi_type"],
+                "label": definition["label"],
+                "category": definition["category"],
+                "featureType": definition["feature_type"],
+                "color": definition["color"],
+                "quest": definition["quest"],
+                "log": None,
+                "detail": definition["detail"],
+                "localX": definition["local_x"],
+                "localY": definition["local_y"],
+            })
     pages = [Image.new("RGB", (page_size, page_size), (0, 0, 0))
              for _ in range(page_count)]
     entries = {}

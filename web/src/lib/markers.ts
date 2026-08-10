@@ -52,6 +52,24 @@ export function collectPoiMarkers(
   ])
   const logs = new Set(model.progression?.unlockedLogs ?? [])
   const result: PoiMarker[] = []
+  for (const beacon of model.beacons ?? []) {
+    result.push({
+      key: `beacon:${beacon.id}`,
+      tileUuid: "",
+      poiType: 0,
+      label: beacon.label,
+      category: "beacon",
+      color: beacon.color,
+      quest: null,
+      log: null,
+      detail: null,
+      localX: 0,
+      localY: 0,
+      unlocked: true,
+      worldX: beacon.x,
+      worldY: beacon.y,
+    })
+  }
   const seenPlacements = new Set<string>()
   for (const [x, y, uuid, rotation, xOffset, yOffset] of model.cells) {
     const definitions = atlas.manifest.tiles[uuid]?.markers ?? []
@@ -72,11 +90,13 @@ export function collectPoiMarkers(
       const isQuest =
         definition.category === "main_quest" ||
         definition.category === "side_quest"
+      const isWorldFeature = definition.category === "world_feature"
       const isLorenzoShip =
         definition.poiType === 105 && definition.category === "location"
       const unlocked = isLorenzoShip
         ? questUnlocked
-        : (definition.poiType === 101 && definition.category === "location") ||
+        : isWorldFeature ||
+          (definition.poiType === 101 && definition.category === "location") ||
           (isQuest ? questUnlocked : placeUnlocked || questUnlocked)
       if (mode === "unlocked" && !unlocked) continue
       const [worldX, worldY] = worldPoint(
@@ -88,7 +108,7 @@ export function collectPoiMarkers(
       )
       result.push({
         ...definition,
-        key: `poi:${definition.poiType}:${definition.category}:${definition.label}:${originX}:${originY}:${uuid}`,
+        key: `poi:${definition.poiType}:${definition.category}:${definition.featureType ?? definition.label}:${originX}:${originY}:${definition.localX}:${definition.localY}:${uuid}`,
         tileUuid: uuid,
         unlocked,
         worldX,

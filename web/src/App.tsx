@@ -197,7 +197,9 @@ export function App() {
     setSpoilerConsent(savedPreference?.spoilerConsent ?? false)
     setMarkerModePrompt(savedPreference ? undefined : "initial")
     const defaultHiddenKeys = collectPoiMarkers(reader.model, atlas, "all")
-      .filter((marker) => marker.category === "main_quest")
+      .filter((marker) =>
+        marker.category === "main_quest" || marker.category === "beacon",
+      )
       .map((marker) => marker.key)
     setHiddenMarkerKeys(new Set(defaultHiddenKeys))
   }, [atlas, reader.model])

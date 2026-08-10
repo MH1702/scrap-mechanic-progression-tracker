@@ -127,9 +127,20 @@ body {
 .poi-marker.growlab { --marker-color: #ffd447; }
 .poi-marker.locked { opacity: 0.72; filter: saturate(0.5); }
 
-.poi-marker.custom {
+.poi-marker.custom,
+.poi-marker.world_feature,
+.poi-marker.beacon {
   transform: translate(-50%, -50%) scale(var(--marker-scale, 1));
   border-radius: 50%;
+}
+
+.poi-marker.beacon::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px #050907;
 }
 
 .poi-marker span {
@@ -148,7 +159,9 @@ body {
   pointer-events: none;
 }
 
-.poi-marker.custom span {
+.poi-marker.custom span,
+.poi-marker.world_feature span,
+.poi-marker.beacon span {
   transform: translate(-50%, calc(-100% - 18px));
 }
 

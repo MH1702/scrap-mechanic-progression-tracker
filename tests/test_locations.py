@@ -1,4 +1,5 @@
 import unittest
+import json
 from unittest import mock
 
 from progression_tracker import locations
@@ -11,6 +12,81 @@ class Tile(object):
 
 
 class LocationTests(unittest.TestCase):
+    def test_repeatable_tile_features_use_actionable_prefab_anchors(self):
+        tile = Tile()
+        tile.name = "Warehouse_Exterior_3Floors_256_01_NEW"
+        tile_json = json.dumps({"entities": {"prefabs": [
+            {
+                "path": "$SURVIVAL_DATA/LocalPrefabs/Warehouse_Elevator_Exterior_01.prefab",
+                "tags": ["EXIT"],
+                "transform": {"position": [10, 20, 100]},
+            },
+            {
+                "path": "$SURVIVAL_DATA/LocalPrefabs/Warehouse_Elevator_Exterior_01.prefab",
+                "tags": ["ENTRANCE"],
+                "transform": {"position": [30, 40, 0]},
+            },
+        ]}})
+        with mock.patch("builtins.open", mock.mock_open(read_data=tile_json)):
+            marker = locations.tile_feature_markers(tile)[0]
+        self.assertEqual(marker["feature_type"], "warehouse")
+        self.assertEqual(marker["detail"], "3 levels")
+        self.assertEqual((marker["local_x"], marker["local_y"]), (30.0, 40.0))
+
+        tile.name = "SchematicStation_Forest_64_01"
+        tile_json = json.dumps({"entities": {"prefabs": [{
+            "path": "$SURVIVAL_DATA/LocalPrefabs/gameplay_prefabs/ap_partunlockstation_01.prefab",
+            "transform": {"position": [31.5, 50.75, 0.5]},
+        }]}})
+        with mock.patch("builtins.open", mock.mock_open(read_data=tile_json)):
+            marker = locations.tile_feature_markers(tile)[0]
+        self.assertEqual(marker["feature_type"], "schematic_bot")
+        self.assertEqual((marker["local_x"], marker["local_y"]), (31.5, 50.75))
+
+    def test_repeatable_resource_tiles_are_classified_without_poi_ids(self):
+        tile = Tile()
+        tile.name = "ChemicalLake_128_02"
+        with mock.patch("progression_tracker.locations._prefab_points",
+                        return_value=((12.0, 34.0),)):
+            chemical = locations.tile_feature_markers(tile)[0]
+        tile.name = "OilPool_Desert_64_01"
+        with mock.patch("progression_tracker.locations._prefab_points",
+                        side_effect=((), ((24.0, 26.0),))):
+            oil = locations.tile_feature_markers(tile)[0]
+        self.assertEqual(
+            (chemical["poi_type"], chemical["category"],
+             chemical["feature_type"], chemical["label"]),
+            (0, "world_feature", "chemical_pond", "Chemical Pond"),
+        )
+        self.assertEqual(oil["feature_type"], "oil_pond")
+        with mock.patch("progression_tracker.locations._prefab_points",
+                        return_value=()):
+            self.assertEqual(locations.tile_feature_markers(
+                type("OtherTile", (), {"name": "Forest_64_01"})()), ())
+
+    def test_resource_tile_emits_every_embedded_source(self):
+        tile = Tile()
+        tile.name = "SiloDistrict_512_01"
+        with mock.patch("progression_tracker.locations._prefab_points",
+                        return_value=((256.0, 224.0), (260.0, 228.0))):
+            markers = locations.tile_feature_markers(tile)
+        self.assertEqual(len(markers), 2)
+        self.assertEqual(
+            [(marker["local_x"], marker["local_y"]) for marker in markers],
+            [(256.0, 224.0), (260.0, 228.0)],
+        )
+
+    def test_story_warehouse_is_distinguished_from_generic_four_level(self):
+        tile = Tile()
+        tile.name = "Warehouse_Exterior_4Floors_256_Quest"
+        with mock.patch("progression_tracker.locations._prefab_points",
+                        return_value=()), mock.patch(
+                            "progression_tracker.locations._prefab_point",
+                            return_value=(128.0, 64.0)):
+            marker = locations.tile_feature_markers(tile)[0]
+        self.assertEqual(marker["label"], "Trashbot/Story Warehouse")
+        self.assertEqual(marker["detail"], "4 levels · Trashbot arena")
+
     def test_recipe_manager_channel_is_authoritative_and_normalized(self):
         connection = mock.Mock()
         connection.execute.return_value = [(b"recipe-manager",)]

@@ -23,6 +23,7 @@ import type {
   MarkerTarget,
   MarkerMode,
   PoiMarker,
+  WorldFeatureType,
   WorldModel,
 } from "@/lib/types"
 
@@ -48,6 +49,17 @@ const groups = [
   { category: "growlab", label: "Growlabs" },
   { category: "main_quest", label: "Main Quests" },
 ] as const
+
+const worldFeatureTypes: Array<{
+  type: WorldFeatureType
+  label: string
+  color: string
+}> = [
+  { type: "chemical_pond", label: "Chemical Ponds", color: "#8ccc4a" },
+  { type: "oil_pond", label: "Oil Ponds", color: "#c58a45" },
+  { type: "warehouse", label: "Warehouses", color: "#788cff" },
+  { type: "schematic_bot", label: "Schematic Bots", color: "#e86acb" },
+]
 
 // GenericBuilderQuest.lua explicitly identifies these six quests as the
 // Scrapper's chain. The Farmer list follows the requester names in the English
@@ -182,6 +194,17 @@ export function MarkerSidebar({
   const sideQuestMarkers = sortMarkers(filteredMarkers.filter(
     (marker) => marker.category === "side_quest",
   ))
+  const beaconMarkers = sortMarkers(filteredMarkers.filter(
+    (marker) => marker.category === "beacon",
+  ))
+  const allWorldFeatureMarkers = markers.filter(
+    (marker) => marker.category === "world_feature",
+  )
+  const matchingWorldFeatureTypes = worldFeatureTypes.filter(({ type }) =>
+    !searching || filteredMarkers.some(
+      (marker) => marker.category === "world_feature" && marker.featureType === type,
+    ),
+  )
   const searchResultCount = filteredPlayers.length + filteredMarkers.length + filteredCustomMarkers.length
   const allMarkerKeys = [
     ...(model?.players ?? []).map((player) => `player:${player.player_id}`),
@@ -336,6 +359,36 @@ export function MarkerSidebar({
               })}
             </MarkerGroup>}
 
+            {(!searching || beaconMarkers.length > 0) && <MarkerGroup
+              title="Beacons"
+              count={beaconMarkers.length}
+              visibility={groupVisibility(
+                beaconMarkers.map((marker) => marker.key),
+                hiddenMarkerKeys,
+              )}
+              onToggle={() => onToggleCategory(
+                beaconMarkers.map((marker) => marker.key),
+              )}
+              forceExpanded={searching}
+            >
+              {beaconMarkers.length === 0 ? (
+                <p className="px-2 py-2 text-[0.625rem] text-muted-foreground">
+                  No placed in-game Beacons found in this world.
+                </p>
+              ) : beaconMarkers.map((marker) => (
+                <MarkerRow
+                  key={marker.key}
+                  active={selectedKey === marker.key}
+                  color={marker.color}
+                  label={marker.label}
+                  detail={marker.detail ?? undefined}
+                  visible={!hiddenMarkerKeys.has(marker.key)}
+                  onClick={() => onSelect(marker)}
+                  onToggle={() => onToggleMarker(marker.key)}
+                />
+              ))}
+            </MarkerGroup>}
+
             {(!searching || filteredCustomMarkers.length > 0) && <MarkerGroup
               title="Custom Markers"
               count={filteredCustomMarkers.length}
@@ -364,6 +417,40 @@ export function MarkerSidebar({
                   onToggle={() => onToggleMarker(marker.key)}
                 />
               ))}
+            </MarkerGroup>}
+
+            {(!searching || matchingWorldFeatureTypes.length > 0) && <MarkerGroup
+              title="World Features"
+              count={allWorldFeatureMarkers.length}
+              visibility={groupVisibility(
+                allWorldFeatureMarkers.map((marker) => marker.key),
+                hiddenMarkerKeys,
+              )}
+              onToggle={() => onToggleCategory(
+                allWorldFeatureMarkers.map((marker) => marker.key),
+              )}
+              forceExpanded={searching}
+            >
+              {matchingWorldFeatureTypes.map((feature) => {
+                const items = allWorldFeatureMarkers.filter(
+                  (marker) => marker.featureType === feature.type,
+                )
+                if (items.length === 0) return null
+                const keys = items.map((marker) => marker.key)
+                const visibility = groupVisibility(keys, hiddenMarkerKeys)
+                return (
+                  <MarkerRow
+                    key={feature.type}
+                    active={false}
+                    color={feature.color}
+                    label={feature.label}
+                    detail={`${items.length} marker${items.length === 1 ? "" : "s"}`}
+                    visible={visibility !== "none"}
+                    onClick={() => onToggleCategory(keys)}
+                    onToggle={() => onToggleCategory(keys)}
+                  />
+                )
+              })}
             </MarkerGroup>}
 
             {groups.map((group) => {
