@@ -80,7 +80,7 @@ export function MarkerDetailsSidebar({
             </Badge>
             {marker && marker.category !== "world_feature" && marker.category !== "beacon" && (
               <Badge variant={marker.unlocked ? "outline" : "secondary"}>
-                {marker.unlocked ? "Unlocked" : "Undiscovered"}
+                {marker.questCompleted ? "Completed" : marker.unlocked ? "Unlocked" : "Undiscovered"}
               </Badge>
             )}
           </div>

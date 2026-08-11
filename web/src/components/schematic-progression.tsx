@@ -145,7 +145,7 @@ function SourceCard({
             )}
           </div>
           <Badge variant={complete ? "secondary" : "outline"}>
-            {complete ? "Unlocked" : "Missing"}
+            {complete ? "Unlocked" : "Undiscovered"}
           </Badge>
         </div>
       </CardHeader>
@@ -197,7 +197,7 @@ function BlockGroupCard({
           )}
           <CardTitle>{group.title}</CardTitle>
           <Badge className="ml-auto" variant={complete ? "secondary" : "outline"}>
-            {complete ? "Unlocked" : "Missing"}
+            {complete ? "Unlocked" : "Undiscovered"}
           </Badge>
         </div>
       </CardHeader>
@@ -449,7 +449,7 @@ export function SchematicProgression({
             </div>
             <label className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/60">
               <span>
-                <span className="block text-xs font-medium">Missing only</span>
+                <span className="block text-xs font-medium">Undiscovered only</span>
                 <span className="block text-[0.625rem] text-muted-foreground">
                   {missingCount} remaining
                 </span>
@@ -457,7 +457,7 @@ export function SchematicProgression({
               <Switch
                 checked={missingOnly}
                 onCheckedChange={setMissingOnly}
-                aria-label="Show missing schematics only"
+                aria-label="Show undiscovered schematics only"
                 data-missing-schematics-only
               />
             </label>
@@ -505,7 +505,7 @@ export function SchematicProgression({
                       {query ? "No part schematics match that search" : "All fixed part schematics are unlocked"}
                     </strong>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {query ? "Try a schematic or quest name." : "Turn off Missing only to review completed rewards."}
+              {query ? "Try a schematic or quest name." : "Turn off Undiscovered only to review completed rewards."}
                     </p>
                   </div>
                 )}
@@ -544,7 +544,7 @@ export function SchematicProgression({
                       {query ? "No block schematics match that search" : "All block schematics are unlocked"}
                     </strong>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {query ? "Try a block or Growlab name." : "Turn off Missing only to review the Growlab bundles."}
+              {query ? "Try a block or Growlab name." : "Turn off Undiscovered only to review the Growlab bundles."}
                     </p>
                   </div>
                 )}

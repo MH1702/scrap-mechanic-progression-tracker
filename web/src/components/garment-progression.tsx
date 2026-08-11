@@ -415,10 +415,10 @@ export function GarmentProgression({ steamId }: GarmentProgressionProps) {
             </div>
             <label className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/60">
               <span>
-                <span className="block text-xs font-medium">Missing only</span>
+                <span className="block text-xs font-medium">Undiscovered only</span>
                 <span className="block text-[0.625rem] text-muted-foreground">{trackableGarments.length - recognizedUnlocked} remaining</span>
               </span>
-              <Switch checked={missingOnly} onCheckedChange={setMissingOnly} aria-label="Show missing garments only" />
+              <Switch checked={missingOnly} onCheckedChange={setMissingOnly} aria-label="Show undiscovered garments only" />
             </label>
           </div>
 
@@ -454,7 +454,7 @@ export function GarmentProgression({ steamId }: GarmentProgressionProps) {
                               : <CircleIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />}
                             <CardTitle className="min-w-0 flex-1">{title}</CardTitle>
                             <Badge variant={complete ? "secondary" : "outline"}>
-                              {unitUnlock ? (complete ? "Unlocked" : "Missing") : `${unlockedCount}/${items.length}`}
+                              {unitUnlock ? (complete ? "Unlocked" : "Undiscovered") : `${unlockedCount}/${items.length}`}
                             </Badge>
                           </div>
                           {showHint && (
@@ -486,7 +486,7 @@ export function GarmentProgression({ steamId }: GarmentProgressionProps) {
             {!visibleMethodSections.length && (
               <div className="rounded-xl border border-dashed bg-card/60 p-10 text-center">
                 <strong>No garments match these filters</strong>
-                <p className="mt-1 text-xs text-muted-foreground">Try another search or turn off Missing only.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Try another search or turn off Undiscovered only.</p>
               </div>
             )}
           </div>
