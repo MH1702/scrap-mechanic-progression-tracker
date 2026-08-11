@@ -232,7 +232,9 @@ body {
 }
 
 .poi-marker.quest-completed::after {
-  top: -7px;
+  top: -12px;
+  right: auto;
+  left: 4px;
   transform: rotate(-45deg);
 }
 
