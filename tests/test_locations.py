@@ -98,6 +98,31 @@ class LocationTests(unittest.TestCase):
         self.assertEqual((marker["local_x"], marker["local_y"]),
                          (128.0, 128.0))
 
+    def test_caged_farmer_markers_use_the_farmer_blueprints_as_the_anchor(self):
+        tile = Tile()
+        tile.name = "CampingSpot_WaterFront_256_01"
+        farmer = locations.CAGED_FARMER_UUID
+        tile_json = json.dumps({"entities": {"blueprints": [
+            {
+                "resource": {"bodies": [{"childs": [{"shapeId": farmer}]}]},
+                "transform": {"position": [80, 100, 0]},
+            },
+            {
+                "resource": {"bodies": [{"childs": [{"shapeId": farmer}]}]},
+                "transform": {"position": [120, 140, 0]},
+            },
+            {
+                "resource": {"bodies": [{"childs": [{"shapeId": "other"}]}]},
+                "transform": {"position": [200, 200, 0]},
+            },
+        ]}})
+        with mock.patch("builtins.open", mock.mock_open(read_data=tile_json)):
+            marker = locations.tile_feature_markers(tile)[0]
+        self.assertEqual(marker["feature_type"], "caged_farmer")
+        self.assertEqual(marker["detail"], "2 caged farmers")
+        self.assertEqual((marker["local_x"], marker["local_y"]),
+                         (100.0, 120.0))
+
     def test_recipe_manager_channel_is_authoritative_and_normalized(self):
         connection = mock.Mock()
         connection.execute.return_value = [(b"recipe-manager",)]

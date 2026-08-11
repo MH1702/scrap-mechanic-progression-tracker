@@ -2,6 +2,7 @@ import {
   ChevronRightIcon,
   AtomIcon,
   CastleIcon,
+  CircleUserRoundIcon,
   DropletIcon,
   EyeIcon,
   EyeOffIcon,
@@ -68,6 +69,7 @@ const worldFeatureTypes: Array<{
   { type: "warehouse", label: "Warehouses", color: "#788cff", icon: WarehouseIcon },
   { type: "schematic_bot", label: "Schematic Bots", color: "#35d9f2", icon: AtomIcon },
   { type: "ruin", label: "Ruins", color: "#c78b5b", icon: CastleIcon },
+  { type: "caged_farmer", label: "Caged Farmers", color: "#e6a34a", icon: CircleUserRoundIcon },
 ]
 
 // GenericBuilderQuest.lua explicitly identifies these six quests as the

@@ -177,7 +177,10 @@ WORLD_FEATURE_COLORS = {
     "warehouse": "#788cff",
     "schematic_bot": "#35d9f2",
     "ruin": "#c78b5b",
+    "caged_farmer": "#e6a34a",
 }
+
+CAGED_FARMER_UUID = "8d601982-4608-4d5e-bb9e-e4041486f7c7"
 
 POI_MARKER_COLORS = {
     (101, "location"): "#a970ff",
@@ -479,6 +482,38 @@ def _prefab_points(tile, path_fragment, required_tag=None):
     return tuple(points)
 
 
+def _blueprint_shape_points(tile, shape_id):
+    """Positions of blueprints containing ``shape_id`` in a terrain tile."""
+    shape_id = shape_id.lower()
+    try:
+        with open(tile.tileson, "r", encoding="utf-8") as f:
+            entities = json.load(f).get("entities") or {}
+    except (AttributeError, OSError, ValueError):
+        return ()
+    points = []
+    for blueprint in entities.get("blueprints") or []:
+        if not isinstance(blueprint, dict):
+            continue
+        resource = blueprint.get("resource") or {}
+        if not isinstance(resource, dict):
+            continue
+        contains_shape = False
+        for body in resource.get("bodies") or []:
+            if not isinstance(body, dict):
+                continue
+            for child in body.get("childs") or []:
+                if (isinstance(child, dict) and
+                        str(child.get("shapeId", "")).lower() == shape_id):
+                    contains_shape = True
+                    break
+            if contains_shape:
+                break
+        position = (blueprint.get("transform") or {}).get("position")
+        if contains_shape and isinstance(position, list) and len(position) >= 2:
+            points.append((float(position[0]), float(position[1])))
+    return tuple(points)
+
+
 def tile_feature_markers(tile):
     """Return repeatable overworld landmarks embedded in ``tile``.
 
@@ -491,6 +526,7 @@ def tile_feature_markers(tile):
     name = getattr(tile, "name", "") or ""
     lowered = name.lower()
     feature_type = label = detail = path_fragment = required_tag = None
+    markers = []
 
     # Resource sources are identified by their actual liquid prefab. This
     # includes chemical plants, Silo District, random desert oil sources, and
@@ -501,7 +537,7 @@ def tile_feature_markers(tile):
     ):
         points = _prefab_points(tile, fragment)
         if points:
-            return tuple({
+            markers.extend({
                 "poi_type": 0,
                 "label": resource_label,
                 "category": "world_feature",
@@ -512,6 +548,7 @@ def tile_feature_markers(tile):
                 "local_x": point[0],
                 "local_y": point[1],
             } for point in points)
+            break
 
     if lowered.startswith("ruin_"):
         feature_type, label = "ruin", "Ruin"
@@ -532,24 +569,39 @@ def tile_feature_markers(tile):
             path_fragment = "warehouse_elevator_exterior_01.prefab"
             required_tag = "entrance"
 
-    if feature_type is None:
-        return ()
-    local = (_prefab_point(tile, path_fragment, required_tag)
-             if path_fragment else None)
-    if local is None:
-        local = (max(getattr(tile, "cells_x", 1), 1) * 32.0,
-                 max(getattr(tile, "cells_y", 1), 1) * 32.0)
-    return ({
-        "poi_type": 0,
-        "label": label,
-        "category": "world_feature",
-        "feature_type": feature_type,
-        "color": WORLD_FEATURE_COLORS[feature_type],
-        "quest": None,
-        "detail": detail,
-        "local_x": local[0],
-        "local_y": local[1],
-    },)
+    if feature_type is not None:
+        local = (_prefab_point(tile, path_fragment, required_tag)
+                 if path_fragment else None)
+        if local is None:
+            local = (max(getattr(tile, "cells_x", 1), 1) * 32.0,
+                     max(getattr(tile, "cells_y", 1), 1) * 32.0)
+        markers.append({
+            "poi_type": 0,
+            "label": label,
+            "category": "world_feature",
+            "feature_type": feature_type,
+            "color": WORLD_FEATURE_COLORS[feature_type],
+            "quest": None,
+            "detail": detail,
+            "local_x": local[0],
+            "local_y": local[1],
+        })
+
+    farmer_points = _blueprint_shape_points(tile, CAGED_FARMER_UUID)
+    if farmer_points:
+        count = len(farmer_points)
+        markers.append({
+            "poi_type": 0,
+            "label": "Caged Farmer",
+            "category": "world_feature",
+            "feature_type": "caged_farmer",
+            "color": WORLD_FEATURE_COLORS["caged_farmer"],
+            "quest": None,
+            "detail": "%d caged farmer%s" % (count, "" if count == 1 else "s"),
+            "local_x": sum(point[0] for point in farmer_points) / count,
+            "local_y": sum(point[1] for point in farmer_points) / count,
+        })
+    return tuple(markers)
 
 
 def _presentation_point(tile, poi_type, category, quest=None):
