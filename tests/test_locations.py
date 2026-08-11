@@ -98,6 +98,18 @@ class LocationTests(unittest.TestCase):
         self.assertEqual((marker["local_x"], marker["local_y"]),
                          (128.0, 128.0))
 
+    def test_farming_patches_are_farms_but_generic_fields_are_not(self):
+        farm = Tile()
+        farm.name = "FarmingPatch_64_02"
+        marker = locations.tile_feature_markers(farm)[0]
+        self.assertEqual(
+            (marker["feature_type"], marker["label"], marker["color"]),
+            ("farm", "Farm", "#82b950"),
+        )
+        field = Tile()
+        field.name = "Field(1111)_03"
+        self.assertEqual(locations.tile_feature_markers(field), ())
+
     def test_caged_farmer_markers_use_the_farmer_blueprints_as_the_anchor(self):
         tile = Tile()
         tile.name = "CampingSpot_WaterFront_256_01"
@@ -249,6 +261,11 @@ class LocationTests(unittest.TestCase):
         ))
         self.assertEqual(locations.POIS[110][0], "Vegetable Packing Station")
         self.assertEqual(locations.POIS[111][0], "Fruit Packing Station")
+        self.assertEqual(locations.POIS[108], ("Hay Maze", "location", None))
+        self.assertEqual(
+            locations._presentation_point(Tile(), 108, "location"),
+            (64.0, 64.0),
+        )
         self.assertEqual(
             [locations.marker_color(poi_type, "growlab") for poi_type in
              (137, 304, 507, 206, 103, 803, 104)],
@@ -256,6 +273,7 @@ class LocationTests(unittest.TestCase):
              "#a970ff", "#4d9cff", "#ef5b5b"],
         )
         self.assertEqual(locations.marker_color(124, "location"), "#a970ff")
+        self.assertEqual(locations.marker_color(108, "location"), "#d7b55b")
         self.assertEqual(locations.marker_color(124, "main_quest"), "#ffb52e")
         self.assertEqual(locations.marker_color(125, "side_quest"), "#63d8ff")
 
@@ -310,20 +328,23 @@ class LocationTests(unittest.TestCase):
         unlocked_pois.return_value = {137}
         tile_uuids.return_value = {
             102: {"hideout": Tile()},
+            108: {"maze": Tile()},
             137: {"growlab": Tile()},
         }
         cd = {
-            "uid": {5: {3: "hideout", 8: "growlab"}},
-            "xOffset": {5: {3: 0, 8: 0}},
-            "yOffset": {5: {3: 0, 8: 0}},
+            "uid": {5: {3: "hideout", 8: "growlab", 13: "maze"}},
+            "xOffset": {5: {3: 0, 8: 0, 13: 0}},
+            "yOffset": {5: {3: 0, 8: 0, 13: 0}},
         }
         markers = locations.collect("game", object(), cd, object())
         hideout = next(m for m in markers
                        if m["poi_type"] == 102 and m["category"] == "location")
         growlab = next(m for m in markers
                        if m["poi_type"] == 137 and m["category"] == "growlab")
+        maze = next(m for m in markers if m["poi_type"] == 108)
         self.assertTrue(hideout["unlocked"])
         self.assertTrue(growlab["unlocked"])
+        self.assertTrue(maze["unlocked"])
         self.assertEqual((hideout["x"], hideout["y"]),
                          ((3 + 2) * 64.0, (5 + 2) * 64.0))
 

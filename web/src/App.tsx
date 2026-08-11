@@ -339,6 +339,12 @@ export function App() {
   }, [])
 
   const selectMarker = useCallback((target: MarkerTarget) => {
+    setHiddenMarkerKeys((current) => {
+      if (!current.has(target.key)) return current
+      const next = new Set(current)
+      next.delete(target.key)
+      return next
+    })
     setPlacingCustomMarker(false)
     setCustomMarkerDraft(undefined)
     setEditingCustomMarkerKey(undefined)

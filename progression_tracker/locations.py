@@ -26,6 +26,7 @@ POIS = {
     104: ("Growlab 7", "growlab", None),
     105: ("Lorenzo's Ship", "location", "quest_endgame"),
     107: ("Lost and Found", "main_quest", "quest_find_recording"),
+    108: ("Hay Maze", "location", None),
     109: ("Mechanic Station 2", "location", "quest_tutorial"),
     110: ("Vegetable Packing Station", "location", None),
     111: ("Fruit Packing Station", "location", None),
@@ -178,6 +179,7 @@ WORLD_FEATURE_COLORS = {
     "schematic_bot": "#35d9f2",
     "ruin": "#c78b5b",
     "caged_farmer": "#e6a34a",
+    "farm": "#82b950",
 }
 
 CAGED_FARMER_UUID = "8d601982-4608-4d5e-bb9e-e4041486f7c7"
@@ -186,6 +188,7 @@ POI_MARKER_COLORS = {
     (101, "location"): "#a970ff",
     (102, "location"): "#61d46e",
     (104, "location"): "#a970ff",
+    (108, "location"): "#d7b55b",
     (109, "location"): "#a970ff",
     (110, "location"): "#61d46e",
     (111, "location"): "#61d46e",
@@ -552,6 +555,8 @@ def tile_feature_markers(tile):
 
     if lowered.startswith("ruin_"):
         feature_type, label = "ruin", "Ruin"
+    elif lowered.startswith("farmingpatch_"):
+        feature_type, label = "farm", "Farm"
     elif lowered.startswith("schematicstation_"):
         feature_type, label = "schematic_bot", "Schematic Bot"
         path_fragment = "ap_partunlockstation_01.prefab"
@@ -610,6 +615,9 @@ def _presentation_point(tile, poi_type, category, quest=None):
         return QUEST_MARKER_POINTS[(poi_type, quest)]
     if category == "growlab":
         return _prefab_point(tile, "dungeons_entranceelevator_")
+    if poi_type == 108 and category == "location":
+        # The reward chest sits at the centre of both maze tile variants.
+        return 64.0, 64.0
     if poi_type == 104 and category == "location":
         # The Scrap City garage is a location node rather than a top-level
         # prefab transform; these coordinates come from terrain_overworld.lua.
@@ -659,9 +667,9 @@ def collect(game_dir, tile_index, cell_data, save):
                     unlocked = (quest_unlocked if category in
                                 ("main_quest", "side_quest") else
                                 place_unlocked or quest_unlocked)
-                    # The starting crash site is known before any quest storage
-                    # is created; it is the one safe unconditional marker.
-                    if poi_type == 101 and category == "location":
+                    # These landmarks are known without quest or discovery
+                    # storage: the starting crash site and the unique maze.
+                    if poi_type in (101, 108) and category == "location":
                         unlocked = True
                     local = _presentation_point(tile, poi_type, category, quest)
                     if local is None:

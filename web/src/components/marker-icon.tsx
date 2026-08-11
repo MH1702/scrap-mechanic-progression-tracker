@@ -11,8 +11,10 @@ import {
   HammerIcon,
   RocketIcon,
   SproutIcon,
+  StoreIcon,
   TractorIcon,
   WarehouseIcon,
+  WheatIcon,
   WrenchIcon,
 } from "lucide-react"
 
@@ -27,6 +29,7 @@ export function markerIconComponent(marker: PoiMarker): IconComponent | undefine
   if (marker.featureType === "schematic_bot") return AtomIcon
   if (marker.featureType === "ruin") return CastleIcon
   if (marker.featureType === "caged_farmer") return CircleUserRoundIcon
+  if (marker.featureType === "farm") return TractorIcon
   if (marker.category === "main_quest") return CircleAlertIcon
   if (marker.category === "side_quest") return HammerIcon
   if (marker.category === "growlab") return SproutIcon
@@ -37,7 +40,8 @@ export function markerIconComponent(marker: PoiMarker): IconComponent | undefine
   if (marker.poiType === 110) return CarrotIcon
   if (marker.poiType === 111) return BananaIcon
   if (marker.poiType === 104) return ForkliftIcon
-  if (marker.poiType === 102) return TractorIcon
+  if (marker.poiType === 108) return WheatIcon
+  if (marker.poiType === 102) return StoreIcon
   return undefined
 }
 

@@ -129,15 +129,19 @@ export function collectPoiMarkers(
       const isWorldFeature = definition.category === "world_feature"
       const isLorenzoShip =
         definition.poiType === 105 && definition.category === "location"
+      const isHayMaze =
+        definition.poiType === 108 && definition.category === "location"
       const isMechanicStation2 =
         definition.poiType === 109 && definition.category === "location"
-      const unlocked = isLorenzoShip
-        ? questUnlocked
-        : isMechanicStation2
-          ? mechanicStation1Unlocked
-        : isWorldFeature ||
-          (definition.poiType === 101 && definition.category === "location") ||
-          (isQuest ? questUnlocked : placeUnlocked || questUnlocked)
+      const unlocked = isHayMaze
+        ? true
+        : isLorenzoShip
+          ? questUnlocked
+          : isMechanicStation2
+            ? mechanicStation1Unlocked
+            : isWorldFeature ||
+              (definition.poiType === 101 && definition.category === "location") ||
+              (isQuest ? questUnlocked : placeUnlocked || questUnlocked)
       if (mode === "unlocked" && !unlocked) continue
       const [worldX, worldY] = worldPoint(
         originX,

@@ -81,10 +81,6 @@ body {
   border-radius: 50% 50% 50% 0;
   rotate: -45deg;
   background: var(--marker-color);
-  box-shadow:
-    0 0 0 2px #050907,
-    0 0 0 4px var(--marker-color),
-    0 3px 9px 3px #000c;
   pointer-events: auto;
   cursor: pointer;
 }
@@ -114,10 +110,6 @@ body {
   transform-origin: center;
   border: 2px solid #fff;
   background: var(--marker-color);
-  box-shadow:
-    0 0 0 2px #050907,
-    0 0 0 4px var(--marker-color),
-    0 3px 9px 3px #000c;
   pointer-events: auto;
   cursor: pointer;
 }
@@ -133,10 +125,6 @@ body {
   border: 3px solid var(--marker-color);
   border-radius: 6px;
   background: color-mix(in srgb, var(--marker-color) 25%, #101512);
-  box-shadow:
-    0 0 0 2px #050907,
-    0 0 0 4px color-mix(in srgb, var(--marker-color) 80%, transparent),
-    0 4px 12px 3px #000d;
 }
 
 .player-marker .player-symbol {
@@ -148,7 +136,6 @@ body {
   transform: translate(-50%, -50%) rotate(45deg);
   color: #fff;
   stroke-width: 2.5;
-  filter: drop-shadow(0 1px 1px #000);
   pointer-events: none;
 }
 
@@ -164,19 +151,12 @@ body {
   height: 30px;
   border: 3px solid var(--marker-color);
   background: color-mix(in srgb, var(--marker-color) 25%, #101512);
-  box-shadow:
-    0 0 0 2px #050907,
-    0 0 0 4px color-mix(in srgb, var(--marker-color) 80%, transparent),
-    0 4px 12px 3px #000d;
 }
 
 .poi-marker.world_feature.oil_pond {
   border: 3px solid #050907;
+  outline: 2px solid #9ca3af;
   background: #050706;
-  box-shadow:
-    0 0 0 2px #9ca3af,
-    0 0 0 4px #050907,
-    0 4px 12px 3px #000d;
 }
 
 .poi-marker.beacon::after {
@@ -185,7 +165,6 @@ body {
   inset: 3px;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 0 0 1px #050907;
 }
 
 .marker-symbol {
@@ -197,7 +176,6 @@ body {
   transform: translate(-50%, -50%);
   color: var(--marker-color);
   stroke-width: 2.6;
-  filter: drop-shadow(0 1px 1px #000);
   pointer-events: none;
 }
 
@@ -229,7 +207,6 @@ body {
   font-size: 9px;
   font-weight: 800;
   line-height: 1;
-  box-shadow: 0 0 0 1px #050907;
 }
 
 .road-network {
@@ -271,7 +248,6 @@ body {
   font-weight: 800;
   line-height: 11px;
   text-align: center;
-  box-shadow: 0 0 0 1px #050907;
 }
 
 .poi-marker span {

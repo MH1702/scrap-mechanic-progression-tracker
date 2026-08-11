@@ -1,6 +1,6 @@
 export type MarkerMode = "unlocked" | "all"
 export type PoiCategory = "location" | "main_quest" | "side_quest" | "growlab" | "world_feature" | "beacon"
-export type WorldFeatureType = "chemical_pond" | "oil_pond" | "warehouse" | "schematic_bot" | "ruin" | "caged_farmer"
+export type WorldFeatureType = "chemical_pond" | "oil_pond" | "warehouse" | "schematic_bot" | "ruin" | "caged_farmer" | "farm"
 export type MarkerCategory = "players" | PoiCategory
 
 export type WorldCell = [
