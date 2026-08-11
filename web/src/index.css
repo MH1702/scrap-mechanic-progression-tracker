@@ -254,6 +254,26 @@ body {
   transform: rotate(-45deg);
 }
 
+.poi-marker.growlab-partial::after {
+  content: attr(data-growlab-progress);
+  position: absolute;
+  top: -12px;
+  left: 1px;
+  min-width: 17px;
+  height: 13px;
+  padding: 0 3px;
+  transform: rotate(-45deg);
+  border: 1px solid #fff;
+  border-radius: 999px;
+  background: #d68b16;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 11px;
+  text-align: center;
+  box-shadow: 0 0 0 1px #050907;
+}
+
 .poi-marker span {
   position: absolute;
   top: 50%;

@@ -1,4 +1,20 @@
 import type { Atlas, MarkerMode, PoiMarker, WorldModel } from "@/lib/types"
+import { vehicleQuestGarmentRewards } from "@/lib/garments"
+import { blockSchematicGroups, schematicSources } from "@/lib/schematics"
+
+const growlabBlockSchematics = new Map(
+  blockSchematicGroups.map((group) => [group.title, group.schematics]),
+)
+const growlabEndRewards = new Map(
+  schematicSources
+    .filter((source) => source.kind === "growlab")
+    .map((source) => [source.title, source.schematics[0]]),
+)
+const questRewards = new Map(
+  schematicSources
+    .filter((source) => source.quest)
+    .map((source) => [source.quest!, source.schematics]),
+)
 
 function worldPoint(
   cellX: number,
@@ -56,6 +72,9 @@ export function collectPoiMarkers(
   ])
   const completedQuests = new Set(model.progression?.completedQuests ?? [])
   const completedGrowlabs = new Set(model.progression?.completedGrowlabs ?? [])
+  const unlockedRecipes = new Set(
+    (model.progression?.unlockedRecipes ?? []).map((uuid) => uuid.toLowerCase()),
+  )
   const logs = new Set(model.progression?.unlockedLogs ?? [])
   // POI 109 (the second station) is an artificial map presentation and is
   // often present in the save's POI list from the start. Mirror the actual
@@ -133,11 +152,39 @@ export function collectPoiMarkers(
       const questCompleted = (definition.category === "main_quest" || definition.category === "side_quest") && definition.quest
         ? completedQuests.has(definition.quest)
         : undefined
+      const markerQuestRewards = isQuest && definition.quest
+        ? questRewards.get(definition.quest)
+        : undefined
+      const markerQuestCosmeticReward = isQuest && definition.quest
+        ? vehicleQuestGarmentRewards[definition.quest]
+        : undefined
       // Growlab 1 is tied to the minidungeon quest. Keep this separate from
       // `unlocked`: reaching/discovering a growlab is not the same as clearing it.
-      const growlabCompleted = definition.category === "growlab"
+      const growlabEndRewardCompleted = definition.category === "growlab"
         ? completedGrowlabs.has(definition.poiType) ||
           Boolean(definition.quest && completedQuests.has(definition.quest))
+        : undefined
+      const growlabBlockProgress = definition.category === "growlab"
+        ? growlabBlockSchematics.get(definition.label) ?? []
+        : undefined
+      const growlabEndReward = definition.category === "growlab"
+        ? growlabEndRewards.get(definition.label)
+        : undefined
+      const growlabBlockSchematicsUnlocked = growlabBlockProgress
+        ? growlabBlockProgress.length > 0 && growlabBlockProgress.every((schematic) =>
+            unlockedRecipes.has(schematic.uuid.toLowerCase()),
+          )
+        : undefined
+      const growlabCompletedSteps = growlabBlockProgress
+        ? (growlabBlockSchematicsUnlocked ? 1 : 0) +
+          (growlabEndRewardCompleted ? 1 : 0)
+        : undefined
+      const growlabTotalSteps = growlabBlockProgress
+        ? 2
+        : undefined
+      const growlabCompleted = growlabCompletedSteps !== undefined &&
+        growlabTotalSteps !== undefined
+        ? growlabCompletedSteps === growlabTotalSteps
         : undefined
       result.push({
         ...definition,
@@ -148,6 +195,16 @@ export function collectPoiMarkers(
         worldY,
         warehouseCompleted,
         questCompleted,
+        questRewards: markerQuestRewards,
+        questCosmeticRewards: markerQuestCosmeticReward
+          ? [markerQuestCosmeticReward]
+          : undefined,
+        growlabEndRewardCompleted,
+        growlabEndReward,
+        growlabBlockSchematics: growlabBlockProgress,
+        growlabBlockSchematicsUnlocked,
+        growlabCompletedSteps,
+        growlabTotalSteps,
         growlabCompleted,
       })
     }

@@ -19,7 +19,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { garments } from "@/lib/garments.generated"
-import { parseGarmentUnlock, type GarmentDefinition, type GarmentUnlockData } from "@/lib/garments"
+import {
+  parseGarmentUnlock,
+  vehicleQuestGarmentRewards,
+  type GarmentDefinition,
+  type GarmentUnlockData,
+} from "@/lib/garments"
 
 interface GarmentProgressionProps {
   steamId?: string | null
@@ -106,7 +111,7 @@ const classicDressbotGroups = new Set([
   "Technician",
 ])
 const traderGroups = new Set(["Farmer", "Miner", "Dekotora", "Woc"])
-const vehicleQuestGarments = new Set(["Wow T-Shirt", "Rock T-Shirt", "Fantastic T-Shirt"])
+const vehicleQuestGarments = new Set(Object.values(vehicleQuestGarmentRewards))
 
 const slotLabels: Record<GarmentDefinition["slot"], string> = {
   torso: "Torso",

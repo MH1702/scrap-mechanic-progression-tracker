@@ -124,6 +124,23 @@ export interface PoiMarker extends PoiDefinition {
   worldY: number
   warehouseCompleted?: boolean
   questCompleted?: boolean
+  questRewards?: Array<{
+    uuid: string
+    title: string
+  }>
+  questCosmeticRewards?: string[]
+  growlabEndRewardCompleted?: boolean
+  growlabEndReward?: {
+    uuid: string
+    title: string
+  }
+  growlabBlockSchematics?: Array<{
+    uuid: string
+    title: string
+  }>
+  growlabBlockSchematicsUnlocked?: boolean
+  growlabCompletedSteps?: number
+  growlabTotalSteps?: number
   growlabCompleted?: boolean
 }
 

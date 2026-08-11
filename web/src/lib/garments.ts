@@ -17,6 +17,12 @@ export interface GarmentUnlockData {
   checksum: UnlockChecksumState
 }
 
+export const vehicleQuestGarmentRewards: Record<string, string> = {
+  quest_build_first_car: "Wow T-Shirt",
+  quest_build_harvest_car: "Rock T-Shirt",
+  quest_build_advanced_car: "Fantastic T-Shirt",
+}
+
 const UUID_LENGTH = 16
 const HEADER_LENGTH = 12
 

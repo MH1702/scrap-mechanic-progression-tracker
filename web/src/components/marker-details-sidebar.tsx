@@ -28,6 +28,10 @@ const categoryLabels = {
   beacon: "Beacon",
 } as const
 
+function schematicRewardLabel(title: string): string {
+  return /\bschematic$/i.test(title) ? title : `${title} Schematic`
+}
+
 export function MarkerDetailsSidebar({
   atlas,
   marker,
@@ -51,6 +55,15 @@ export function MarkerDetailsSidebar({
   }
   const title = marker ? markerHoverLabel(marker) : customMarker?.label ?? player!.label
   const color = marker?.color ?? customMarker?.color ?? "#e45343"
+  const growlabPartiallyCompleted = marker?.category === "growlab" &&
+    Boolean(marker.growlabCompletedSteps) && !marker.growlabCompleted
+  const markerStatus = marker?.questCompleted || marker?.growlabCompleted
+    ? "Completed"
+    : growlabPartiallyCompleted
+      ? "Partially complete"
+      : marker?.unlocked
+        ? "Unlocked"
+        : "Undiscovered"
 
   return (
     <aside
@@ -80,7 +93,7 @@ export function MarkerDetailsSidebar({
             </Badge>
             {marker && marker.category !== "world_feature" && marker.category !== "beacon" && (
               <Badge variant={marker.unlocked ? "outline" : "secondary"}>
-                {marker.questCompleted || marker.growlabCompleted ? "Completed" : marker.unlocked ? "Unlocked" : "Undiscovered"}
+                {markerStatus}
               </Badge>
             )}
           </div>
@@ -141,7 +154,26 @@ export function MarkerDetailsSidebar({
             <>
               <dt className="text-muted-foreground">Status</dt>
               <dd className="text-right font-medium">
-                {marker.growlabCompleted ? "Completed" : "Uncompleted"}
+                {marker.growlabCompleted
+                  ? "Completed"
+                  : marker.growlabCompletedSteps
+                    ? `Partially complete (${marker.growlabCompletedSteps}/${marker.growlabTotalSteps})`
+                    : "Uncompleted"}
+              </dd>
+              <dt className="text-muted-foreground">End reward</dt>
+              <dd className="flex flex-col items-end text-right">
+                <span className="font-medium">
+                  {marker.growlabEndReward
+                    ? schematicRewardLabel(marker.growlabEndReward.title)
+                    : "Unknown reward"}
+                </span>
+                <span className="text-muted-foreground">
+                  {marker.growlabEndRewardCompleted ? "Collected" : "Missing"}
+                </span>
+              </dd>
+              <dt className="text-muted-foreground">Block schematic bundle</dt>
+              <dd className="text-right font-medium">
+                {marker.growlabBlockSchematicsUnlocked ? "Unlocked" : "Missing"}
               </dd>
             </>
           )}
@@ -156,6 +188,42 @@ export function MarkerDetailsSidebar({
             </>
           )}
         </dl>
+
+        {marker?.questRewards && marker.questRewards.length > 0 && (
+          <div className="mt-4 rounded-lg border bg-muted/30 p-3">
+            <p className="mb-2 text-sm font-semibold">Quest rewards</p>
+            <ul className="grid list-disc gap-1.5 pl-4 text-xs">
+              {marker.questRewards.map((reward) => (
+                <li key={reward.uuid}>{schematicRewardLabel(reward.title)}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {marker?.questCosmeticRewards && marker.questCosmeticRewards.length > 0 && (
+          <div className="mt-4 rounded-lg border bg-muted/30 p-3">
+            <p className="mb-2 text-sm font-semibold">Cosmetic reward</p>
+            <ul className="grid list-disc gap-1.5 pl-4 text-xs">
+              {marker.questCosmeticRewards.map((reward) => (
+                <li key={reward}>{reward}</li>
+              ))}
+            </ul>
+            <p className="mt-2 text-[0.625rem] leading-relaxed text-muted-foreground">
+              Account-level unlock; ownership cannot be determined from this world save.
+            </p>
+          </div>
+        )}
+
+        {marker?.category === "growlab" && marker.growlabBlockSchematics && (
+          <div className="mt-4 rounded-lg border bg-muted/30 p-3">
+            <p className="mb-2 text-sm font-semibold">Included block schematics</p>
+            <ul className="grid list-disc gap-1.5 pl-4 text-xs">
+              {marker.growlabBlockSchematics.map((schematic) => (
+                <li key={schematic.uuid}>{schematicRewardLabel(schematic.title)}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="mt-5 grid gap-2">
           <Button
