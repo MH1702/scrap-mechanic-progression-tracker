@@ -199,7 +199,9 @@ export function App() {
     setMarkerModePrompt(savedPreference ? undefined : "initial")
     const defaultHiddenKeys = collectPoiMarkers(reader.model, atlas, "all")
       .filter((marker) =>
-        marker.category === "main_quest" || marker.category === "beacon",
+        marker.category === "main_quest" ||
+        marker.category === "beacon" ||
+        marker.featureType === "ruin",
       )
       .map((marker) => marker.key)
     setHiddenMarkerKeys(new Set(defaultHiddenKeys))

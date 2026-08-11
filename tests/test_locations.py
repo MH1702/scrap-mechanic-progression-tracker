@@ -87,6 +87,17 @@ class LocationTests(unittest.TestCase):
         self.assertEqual(marker["label"], "Trashbot/Story Warehouse")
         self.assertEqual(marker["detail"], "4 levels · Trashbot arena")
 
+    def test_ruin_tiles_are_repeatable_world_features(self):
+        tile = Tile()
+        tile.name = "Ruin_Meadow_128_04"
+        marker = locations.tile_feature_markers(tile)[0]
+        self.assertEqual(
+            (marker["feature_type"], marker["label"], marker["color"]),
+            ("ruin", "Ruin", "#c78b5b"),
+        )
+        self.assertEqual((marker["local_x"], marker["local_y"]),
+                         (128.0, 128.0))
+
     def test_recipe_manager_channel_is_authoritative_and_normalized(self):
         connection = mock.Mock()
         connection.execute.return_value = [(b"recipe-manager",)]

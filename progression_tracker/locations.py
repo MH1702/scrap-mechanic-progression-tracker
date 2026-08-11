@@ -176,6 +176,7 @@ WORLD_FEATURE_COLORS = {
     "oil_pond": "#111111",
     "warehouse": "#788cff",
     "schematic_bot": "#35d9f2",
+    "ruin": "#c78b5b",
 }
 
 POI_MARKER_COLORS = {
@@ -512,7 +513,9 @@ def tile_feature_markers(tile):
                 "local_y": point[1],
             } for point in points)
 
-    if lowered.startswith("schematicstation_"):
+    if lowered.startswith("ruin_"):
+        feature_type, label = "ruin", "Ruin"
+    elif lowered.startswith("schematicstation_"):
         feature_type, label = "schematic_bot", "Schematic Bot"
         path_fragment = "ap_partunlockstation_01.prefab"
     else:
@@ -531,7 +534,8 @@ def tile_feature_markers(tile):
 
     if feature_type is None:
         return ()
-    local = _prefab_point(tile, path_fragment, required_tag)
+    local = (_prefab_point(tile, path_fragment, required_tag)
+             if path_fragment else None)
     if local is None:
         local = (max(getattr(tile, "cells_x", 1), 1) * 32.0,
                  max(getattr(tile, "cells_y", 1), 1) * 32.0)

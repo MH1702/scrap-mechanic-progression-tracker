@@ -1,6 +1,7 @@
 import {
   AtomIcon,
   BananaIcon,
+  CastleIcon,
   CarrotIcon,
   CircleAlertIcon,
   DropletIcon,
@@ -23,6 +24,7 @@ export function markerIconComponent(marker: PoiMarker): IconComponent | undefine
   if (marker.featureType === "oil_pond") return DropletIcon
   if (marker.featureType === "warehouse") return WarehouseIcon
   if (marker.featureType === "schematic_bot") return AtomIcon
+  if (marker.featureType === "ruin") return CastleIcon
   if (marker.category === "main_quest") return CircleAlertIcon
   if (marker.category === "side_quest") return HammerIcon
   if (marker.category === "growlab") return SproutIcon

@@ -1,6 +1,7 @@
 import {
   ChevronRightIcon,
   AtomIcon,
+  CastleIcon,
   DropletIcon,
   EyeIcon,
   EyeOffIcon,
@@ -66,6 +67,7 @@ const worldFeatureTypes: Array<{
   { type: "oil_pond", label: "Oil Ponds", color: "#111111", icon: DropletIcon },
   { type: "warehouse", label: "Warehouses", color: "#788cff", icon: WarehouseIcon },
   { type: "schematic_bot", label: "Schematic Bots", color: "#35d9f2", icon: AtomIcon },
+  { type: "ruin", label: "Ruins", color: "#c78b5b", icon: CastleIcon },
 ]
 
 // GenericBuilderQuest.lua explicitly identifies these six quests as the
@@ -233,9 +235,6 @@ export function MarkerSidebar({
         <div className="flex items-center gap-2">
           <MapPinIcon className="size-4 text-muted-foreground" />
           <h2 className="font-heading text-sm font-medium">Map markers</h2>
-          <Badge variant="secondary" className="ml-auto">
-            {(model?.players.length ?? 0) + markers.length + customMarkers.length}
-          </Badge>
         </div>
         <p className="mt-1 text-xs text-muted-foreground">
           Select a marker to locate it on the map.
