@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react"
@@ -31,6 +32,7 @@ interface MapViewportProps {
   focus?: MarkerFocus
   selectedKey?: string
   alwaysShowLabels: boolean
+  showRoadNetwork: boolean
   placingCustomMarker: boolean
   onFile(file?: File): void
   onOpenFile(): void
@@ -57,6 +59,26 @@ interface MapContextMenu {
   worldY: number
 }
 
+function roadConnections(mask: string, rotation: number): number[] {
+  const maskEdges = [0, 3, 2, 1]
+  const activeEdges = [...mask].reduce<number[]>(
+    (result, bit, edge) => bit === "1" ? [...result, edge] : result,
+    [],
+  )
+  const isCorner = activeEdges.length === 2 &&
+    (activeEdges[0] - activeEdges[1] + 4) % 4 !== 2
+  const isTJunction = activeEdges.length === 3
+  return activeEdges.map((edge) => {
+    const mappedEdge = maskEdges[edge]
+    const reflectedEdge = isTJunction
+      ? (mappedEdge + 2) % 4
+      : isCorner && (mappedEdge === 0 || mappedEdge === 2)
+        ? 2 - mappedEdge
+        : mappedEdge
+    return (reflectedEdge - rotation + 4) % 4
+  })
+}
+
 export function MapViewport({
   atlas,
   model,
@@ -66,6 +88,7 @@ export function MapViewport({
   focus,
   selectedKey,
   alwaysShowLabels,
+  showRoadNetwork,
   placingCustomMarker,
   onFile,
   onOpenFile,
@@ -426,6 +449,24 @@ export function MapViewport({
   }
 
   const px = atlas?.manifest.pixelsPerCell ?? 32
+  const roadSegments = useMemo(() => {
+    if (!model || !atlas) return []
+    const segments: Array<{ cellX: number; cellY: number; x: number; y: number; connections: number[] }> = []
+    for (const [x, y, uuid, rotation] of model.cells) {
+      const tile = atlas.manifest.tiles[uuid]
+      const match = tile?.name.match(/Road\((\d{4})\)/i)
+      if (!match) continue
+      const segment = {
+        cellX: x,
+        cellY: y,
+        x: (x - model.bounds.xMin) * px,
+        y: (model.bounds.yMax - y) * px,
+        connections: roadConnections(match[1], rotation),
+      }
+      segments.push(segment)
+    }
+    return segments
+  }, [atlas, model, px])
 
   return (
     <main
@@ -499,6 +540,30 @@ export function MapViewport({
         <>
           <canvas ref={canvasRef} className="map-canvas" />
           <div ref={mapRef} className="world-map">
+            {showRoadNetwork && roadSegments.length > 0 && (
+              <svg
+                className="road-network"
+                width={(model.bounds.xMax - model.bounds.xMin + 1) * px}
+                height={(model.bounds.yMax - model.bounds.yMin + 1) * px}
+                viewBox={`0 0 ${(model.bounds.xMax - model.bounds.xMin + 1) * px} ${(model.bounds.yMax - model.bounds.yMin + 1) * px}`}
+                aria-label="Experimental road network overlay"
+              >
+                {roadSegments.map((segment, index) => {
+                  const paths: React.ReactNode[] = []
+                  const edgePadding = 4
+                  const edges = [[px / 2, -edgePadding, px / 2, px / 2], [px + edgePadding, px / 2, px / 2, px / 2], [px / 2, px + edgePadding, px / 2, px / 2], [-edgePadding, px / 2, px / 2, px / 2]]
+                  for (const destinationEdge of segment.connections) {
+                      const [x1, y1, x2, y2] = edges[destinationEdge]
+                      paths.push(<line key={destinationEdge} x1={x1} y1={y1} x2={x2} y2={y2} />)
+                  }
+                  return (
+                    <g key={`${segment.x}:${segment.y}:${index}`} transform={`translate(${segment.x} ${segment.y})`}>
+                      {paths}
+                    </g>
+                  )
+                })}
+              </svg>
+            )}
             <div className={`marker-layer${alwaysShowLabels ? " labels-always-visible" : ""}`}>
             {players.map((player) => (
               <div

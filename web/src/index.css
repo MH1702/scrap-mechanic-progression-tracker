@@ -231,6 +231,20 @@ body {
   box-shadow: 0 0 0 1px #050907;
 }
 
+.road-network {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.road-network line {
+  stroke: #f6c453;
+  stroke-width: 10px;
+  stroke-linecap: round;
+  opacity: 1;
+}
+
 .poi-marker.quest-completed::after {
   top: -12px;
   right: auto;

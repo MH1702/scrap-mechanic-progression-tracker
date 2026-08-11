@@ -105,6 +105,7 @@ export function App() {
   const [selectedKey, setSelectedKey] = useState<string>()
   const [focus, setFocus] = useState<MarkerFocus>()
   const [alwaysShowLabels, setAlwaysShowLabels] = useState(false)
+  const [showRoadNetwork, setShowRoadNetwork] = useState(false)
   const [spoilerConsent, setSpoilerConsent] = useState(false)
   const [progressionSpoilerConsent, setProgressionSpoilerConsent] = useState(false)
   const [markerModePrompt, setMarkerModePrompt] = useState<MarkerModePrompt>()
@@ -453,10 +454,12 @@ export function App() {
             hiddenMarkerKeys={hiddenMarkerKeys}
             selectedKey={selectedKey}
             alwaysShowLabels={alwaysShowLabels}
+            showRoadNetwork={showRoadNetwork}
             markerMode={markerMode}
             placingCustomMarker={placingCustomMarker}
             onSelect={selectMarker}
             onAlwaysShowLabelsChange={setAlwaysShowLabels}
+            onShowRoadNetworkChange={setShowRoadNetwork}
             onMarkerModeChange={requestMarkerMode}
             onToggleCustomMarkerPlacement={toggleCustomMarkerPlacement}
             onToggleCategory={toggleCategory}
@@ -471,6 +474,7 @@ export function App() {
             focus={focus}
             selectedKey={selectedKey}
             alwaysShowLabels={alwaysShowLabels}
+            showRoadNetwork={showRoadNetwork}
             placingCustomMarker={placingCustomMarker}
             onFile={(file) => void reader.openFile(file)}
             onOpenFile={() => inputRef.current?.click()}

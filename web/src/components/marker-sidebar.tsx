@@ -39,10 +39,12 @@ interface MarkerSidebarProps {
   hiddenMarkerKeys: ReadonlySet<string>
   selectedKey?: string
   alwaysShowLabels: boolean
+  showRoadNetwork: boolean
   markerMode: MarkerMode
   placingCustomMarker: boolean
   onSelect(target: MarkerTarget): void
   onAlwaysShowLabelsChange(value: boolean): void
+  onShowRoadNetworkChange(value: boolean): void
   onMarkerModeChange(value: MarkerMode): void
   onToggleCustomMarkerPlacement(): void
   onToggleCategory(keys: string[]): void
@@ -175,10 +177,12 @@ export function MarkerSidebar({
   hiddenMarkerKeys,
   selectedKey,
   alwaysShowLabels,
+  showRoadNetwork,
   markerMode,
   placingCustomMarker,
   onSelect,
   onAlwaysShowLabelsChange,
+  onShowRoadNetworkChange,
   onMarkerModeChange,
   onToggleCustomMarkerPlacement,
   onToggleCategory,
@@ -274,6 +278,22 @@ export function MarkerSidebar({
                   onCheckedChange={onAlwaysShowLabelsChange}
                   aria-label="Always show labels"
                   data-label-visibility
+                />
+              </div>
+              <div
+                className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 hover:bg-muted/60"
+              >
+                <span className="min-w-0">
+                  <span className="block text-xs font-medium">Show road network</span>
+                  <span className="block text-[0.625rem] text-muted-foreground">
+                    Experimental tile-based visualization.
+                  </span>
+                </span>
+                <Switch
+                  checked={showRoadNetwork}
+                  onCheckedChange={onShowRoadNetworkChange}
+                  aria-label="Show road network"
+                  data-road-network
                 />
               </div>
               <div
