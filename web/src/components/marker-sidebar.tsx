@@ -7,6 +7,7 @@ import {
   EyeIcon,
   EyeOffIcon,
   FlaskConicalIcon,
+  HouseIcon,
   MapPinIcon,
   PlusIcon,
   SearchIcon,
@@ -72,6 +73,7 @@ const worldFeatureTypes: Array<{
   { type: "ruin", label: "Ruins", color: "#c78b5b", icon: CastleIcon },
   { type: "caged_farmer", label: "Caged Farmers", color: "#e6a34a", icon: CircleUserRoundIcon },
   { type: "farm", label: "Farm Tiles", color: "#82b950", icon: TractorIcon },
+  { type: "scrap_village", label: "Scrap Villages", color: "#d9854f", icon: HouseIcon },
 ]
 
 // GenericBuilderQuest.lua explicitly identifies these six quests as the

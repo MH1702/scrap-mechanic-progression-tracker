@@ -110,6 +110,24 @@ class LocationTests(unittest.TestCase):
         field.name = "Field(1111)_03"
         self.assertEqual(locations.tile_feature_markers(field), ())
 
+    def test_kiosk_building_tiles_are_scrap_villages(self):
+        village = Tile()
+        village.name = "Kiosk_64_02"
+        village.cells_x = 1
+        village.cells_y = 1
+        marker = locations.tile_feature_markers(village)[0]
+        self.assertEqual(
+            (marker["feature_type"], marker["label"], marker["color"]),
+            ("scrap_village", "Scrap Village", "#d9854f"),
+        )
+        self.assertEqual((marker["local_x"], marker["local_y"]), (32.0, 32.0))
+
+        for excluded_name in ("Kiosk_Desert_64_01", "Kiosk_Forest_64_01",
+                              "Random_Road_64_02"):
+            excluded = Tile()
+            excluded.name = excluded_name
+            self.assertEqual(locations.tile_feature_markers(excluded), ())
+
     def test_caged_farmer_markers_use_the_farmer_blueprints_as_the_anchor(self):
         tile = Tile()
         tile.name = "CampingSpot_WaterFront_256_01"

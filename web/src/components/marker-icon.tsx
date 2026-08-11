@@ -9,6 +9,7 @@ import {
   FlaskConicalIcon,
   ForkliftIcon,
   HammerIcon,
+  HouseIcon,
   RocketIcon,
   SproutIcon,
   StoreIcon,
@@ -30,6 +31,7 @@ export function markerIconComponent(marker: PoiMarker): IconComponent | undefine
   if (marker.featureType === "ruin") return CastleIcon
   if (marker.featureType === "caged_farmer") return CircleUserRoundIcon
   if (marker.featureType === "farm") return TractorIcon
+  if (marker.featureType === "scrap_village") return HouseIcon
   if (marker.category === "main_quest") return CircleAlertIcon
   if (marker.category === "side_quest") return HammerIcon
   if (marker.category === "growlab") return SproutIcon

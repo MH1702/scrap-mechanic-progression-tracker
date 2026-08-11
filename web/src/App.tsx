@@ -202,7 +202,8 @@ export function App() {
         marker.category === "main_quest" ||
         marker.category === "beacon" ||
         marker.featureType === "ruin" ||
-        marker.featureType === "caged_farmer",
+        marker.featureType === "caged_farmer" ||
+        marker.featureType === "scrap_village",
       )
       .map((marker) => marker.key)
     setHiddenMarkerKeys(new Set(defaultHiddenKeys))

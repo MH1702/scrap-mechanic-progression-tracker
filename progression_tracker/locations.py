@@ -180,6 +180,7 @@ WORLD_FEATURE_COLORS = {
     "ruin": "#c78b5b",
     "caged_farmer": "#e6a34a",
     "farm": "#82b950",
+    "scrap_village": "#d9854f",
 }
 
 CAGED_FARMER_UUID = "8d601982-4608-4d5e-bb9e-e4041486f7c7"
@@ -557,6 +558,8 @@ def tile_feature_markers(tile):
         feature_type, label = "ruin", "Ruin"
     elif lowered.startswith("farmingpatch_"):
         feature_type, label = "farm", "Farm"
+    elif re.fullmatch(r"kiosk_64_0[123]", lowered):
+        feature_type, label = "scrap_village", "Scrap Village"
     elif lowered.startswith("schematicstation_"):
         feature_type, label = "schematic_bot", "Schematic Bot"
         path_fragment = "ap_partunlockstation_01.prefab"
