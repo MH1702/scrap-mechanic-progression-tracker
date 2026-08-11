@@ -324,6 +324,28 @@ def _unlocked_logs(save):
     return out
 
 
+def _completed_growlabs(save):
+    """Return POI type numbers for growlabs cleared in this save."""
+    out = set()
+    if "ScriptData" not in getattr(save, "_tables", set()):
+        return out
+    for (blob,) in save.con.execute("SELECT data FROM ScriptData"):
+        raw = unpack_blob(blob)
+        if not raw or raw[:3] != smlua.MAGIC:
+            continue
+        try:
+            value = smlua.loads(raw)
+        except Exception:
+            continue
+        completed = value.get("completedGrowlabs") if isinstance(value, dict) else None
+        if not isinstance(completed, dict):
+            continue
+        for poi_type, is_completed in completed.items():
+            if is_completed is True and isinstance(poi_type, int):
+                out.add(poi_type)
+    return out
+
+
 def _unlocked_recipes(save):
     """Return lower-case recipe UUIDs from Recipe Manager storage channel 49."""
     out = set()
@@ -351,13 +373,17 @@ def _unlocked_recipes(save):
 def progression_state(save):
     """Browser-safe quest and POI state from a read-only open save."""
     active, completed = _quest_state(save)
-    return {
+    state = {
         "activeQuests": sorted(active),
         "completedQuests": sorted(completed),
         "unlockedLogs": sorted(_unlocked_logs(save)),
         "unlockedPoiTypes": sorted(_unlocked_pois(save)),
         "unlockedRecipes": sorted(_unlocked_recipes(save)),
     }
+    completed_growlabs = sorted(_completed_growlabs(save))
+    if completed_growlabs:
+        state["completedGrowlabs"] = completed_growlabs
+    return state
 
 
 def _poi_tile_uuids(game_dir, tile_index):
@@ -544,6 +570,7 @@ def collect(game_dir, tile_index, cell_data, save):
     state = progression_state(save)
     active = set(state["activeQuests"])
     completed = set(state["completedQuests"])
+    completed_growlabs = set(state.get("completedGrowlabs", ()))
     unlocked_types = set(state["unlockedPoiTypes"])
     unlocked_logs = set(state["unlockedLogs"])
     tiles = _poi_tile_uuids(game_dir, tile_index)

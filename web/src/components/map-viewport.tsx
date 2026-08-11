@@ -591,14 +591,14 @@ export function MapViewport({
               const label = markerHoverLabel(marker)
               return (
                 <div
-                  className={`poi-marker ${marker.category} ${marker.featureType ?? ""}${markerIconComponent(marker) ? " has-icon" : ""}${marker.warehouseCompleted ? " warehouse-completed" : ""}${marker.questCompleted ? " quest-completed" : ""}${marker.unlocked ? "" : " locked"}${selectedKey === marker.key ? " selected" : ""}`}
+                  className={`poi-marker ${marker.category} ${marker.featureType ?? ""}${markerIconComponent(marker) ? " has-icon" : ""}${marker.warehouseCompleted ? " warehouse-completed" : ""}${marker.questCompleted ? " quest-completed" : ""}${marker.growlabCompleted ? " growlab-completed" : ""}${marker.unlocked ? "" : " locked"}${selectedKey === marker.key ? " selected" : ""}`}
                   key={marker.key}
                   style={{
                     left: (marker.worldX / 64 - model.bounds.xMin) * px,
                     top: (model.bounds.yMax + 1 - marker.worldY / 64) * px,
                     "--marker-color": marker.color,
                   } as React.CSSProperties}
-                  title={`${label}${marker.unlocked ? "" : " (locked)"}`}
+                  title={`${label}${marker.unlocked ? "" : " (undiscovered)"}`}
                   onPointerDown={(event) => {
                     if (event.button === 0) event.stopPropagation()
                   }}

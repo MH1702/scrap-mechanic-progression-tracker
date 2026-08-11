@@ -34,6 +34,7 @@ export interface ProgressionState {
   completedQuests: string[]
   unlockedLogs: string[]
   unlockedPoiTypes: number[]
+  completedGrowlabs?: number[]
   unlockedRecipes: string[]
 }
 
@@ -123,6 +124,7 @@ export interface PoiMarker extends PoiDefinition {
   worldY: number
   warehouseCompleted?: boolean
   questCompleted?: boolean
+  growlabCompleted?: boolean
 }
 
 export interface MarkerTarget {

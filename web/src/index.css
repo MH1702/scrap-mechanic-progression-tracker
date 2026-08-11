@@ -212,7 +212,8 @@ body {
 }
 
 .poi-marker.warehouse-completed::after,
-.poi-marker.quest-completed::after {
+.poi-marker.quest-completed::after,
+.poi-marker.growlab-completed::after {
   content: "✓";
   position: absolute;
   top: -4px;
@@ -245,7 +246,8 @@ body {
   opacity: 1;
 }
 
-.poi-marker.quest-completed::after {
+.poi-marker.quest-completed::after,
+.poi-marker.growlab-completed::after {
   top: -12px;
   right: auto;
   left: 4px;

@@ -80,7 +80,7 @@ export function MarkerDetailsSidebar({
             </Badge>
             {marker && marker.category !== "world_feature" && marker.category !== "beacon" && (
               <Badge variant={marker.unlocked ? "outline" : "secondary"}>
-                {marker.questCompleted ? "Completed" : marker.unlocked ? "Unlocked" : "Undiscovered"}
+                {marker.questCompleted || marker.growlabCompleted ? "Completed" : marker.unlocked ? "Unlocked" : "Undiscovered"}
               </Badge>
             )}
           </div>
@@ -134,6 +134,14 @@ export function MarkerDetailsSidebar({
               <dt className="text-muted-foreground">Status</dt>
               <dd className="text-right font-medium">
                 {marker.warehouseCompleted ? "Completed / exploded" : "Uncompleted"}
+              </dd>
+            </>
+          )}
+          {marker?.category === "growlab" && (
+            <>
+              <dt className="text-muted-foreground">Status</dt>
+              <dd className="text-right font-medium">
+                {marker.growlabCompleted ? "Completed" : "Uncompleted"}
               </dd>
             </>
           )}

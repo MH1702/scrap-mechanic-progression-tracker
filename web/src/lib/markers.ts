@@ -55,7 +55,13 @@ export function collectPoiMarkers(
     ...(model.progression?.completedQuests ?? []),
   ])
   const completedQuests = new Set(model.progression?.completedQuests ?? [])
+  const completedGrowlabs = new Set(model.progression?.completedGrowlabs ?? [])
   const logs = new Set(model.progression?.unlockedLogs ?? [])
+  // POI 109 (the second station) is an artificial map presentation and is
+  // often present in the save's POI list from the start. Mirror the actual
+  // progression of Station 1 instead of exposing it immediately.
+  const mechanicStation1Unlocked =
+    unlockedTypes.has(124) || quests.has("quest_mechanicstation")
   const warehouses = new Map(
     (model.warehouses ?? []).map((warehouse) => [
       `${warehouse.zero_cell_x}:${warehouse.zero_cell_y}`,
@@ -104,8 +110,12 @@ export function collectPoiMarkers(
       const isWorldFeature = definition.category === "world_feature"
       const isLorenzoShip =
         definition.poiType === 105 && definition.category === "location"
+      const isMechanicStation2 =
+        definition.poiType === 109 && definition.category === "location"
       const unlocked = isLorenzoShip
         ? questUnlocked
+        : isMechanicStation2
+          ? mechanicStation1Unlocked
         : isWorldFeature ||
           (definition.poiType === 101 && definition.category === "location") ||
           (isQuest ? questUnlocked : placeUnlocked || questUnlocked)
@@ -123,6 +133,12 @@ export function collectPoiMarkers(
       const questCompleted = (definition.category === "main_quest" || definition.category === "side_quest") && definition.quest
         ? completedQuests.has(definition.quest)
         : undefined
+      // Growlab 1 is tied to the minidungeon quest. Keep this separate from
+      // `unlocked`: reaching/discovering a growlab is not the same as clearing it.
+      const growlabCompleted = definition.category === "growlab"
+        ? completedGrowlabs.has(definition.poiType) ||
+          Boolean(definition.quest && completedQuests.has(definition.quest))
+        : undefined
       result.push({
         ...definition,
         key: `poi:${definition.poiType}:${definition.category}:${definition.featureType ?? definition.label}:${originX}:${originY}:${definition.localX}:${definition.localY}:${uuid}`,
@@ -132,6 +148,7 @@ export function collectPoiMarkers(
         worldY,
         warehouseCompleted,
         questCompleted,
+        growlabCompleted,
       })
     }
   }

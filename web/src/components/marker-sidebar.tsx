@@ -4,7 +4,6 @@ import {
   DropletIcon,
   EyeIcon,
   EyeOffIcon,
-  LockIcon,
   FlaskConicalIcon,
   MapPinIcon,
   PlusIcon,
@@ -512,7 +511,7 @@ export function MarkerSidebar({
                       color={marker.color}
                       icon={<MarkerIcon marker={marker} className="size-2.5" />}
                       label={markerLabel(marker)}
-                      detail={marker.unlocked ? undefined : "Locked"}
+                      detail={marker.unlocked ? undefined : "Undiscovered"}
                       locked={!marker.unlocked}
                       visible={!hiddenMarkerKeys.has(marker.key)}
                       onClick={() => onSelect(marker)}
@@ -570,7 +569,7 @@ export function MarkerSidebar({
                             color={marker.color}
                             icon={<MarkerIcon marker={marker} className="size-2.5" />}
                             label={markerLabel(marker)}
-                            detail={marker.unlocked ? undefined : "Locked"}
+                            detail={marker.unlocked ? undefined : "Undiscovered"}
                             locked={!marker.unlocked}
                             visible={!hiddenMarkerKeys.has(marker.key)}
                             onClick={() => onSelect(marker)}
@@ -785,7 +784,6 @@ function MarkerRow({
           <span className="block truncate text-xs font-medium">{label}</span>
           {detail && (
             <span className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
-              {locked && <LockIcon className="size-2.5" />}
               {detail}
             </span>
           )}
