@@ -233,6 +233,7 @@ body {
 
 .poi-marker.quest-completed::after {
   top: -7px;
+  transform: rotate(-45deg);
 }
 
 .poi-marker span {
