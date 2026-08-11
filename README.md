@@ -50,6 +50,17 @@ npm run typecheck
 npm run build
 ```
 
+To trace non-grid roads directly over their baked atlas tiles, run the
+standalone development helper:
+
+```text
+python scripts/road_mapping_editor.py
+```
+
+It opens a temporary local HTML editor and does not become part of the
+production web bundle. Use `--group warehouses` to trace every current and
+retired warehouse exterior tile.
+
 ## Dependency and licensing
 
 The project vendors an unmodified, pinned ScrapMap 2.0 snapshot as a source

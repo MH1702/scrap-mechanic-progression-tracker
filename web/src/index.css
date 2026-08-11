@@ -216,10 +216,13 @@ body {
   pointer-events: none;
 }
 
-.road-network line {
+.road-network line,
+.road-network polyline {
+  fill: none;
   stroke: #f6c453;
-  stroke-width: 10px;
+  stroke-width: 4px;
   stroke-linecap: round;
+  stroke-linejoin: round;
   opacity: 1;
 }
 

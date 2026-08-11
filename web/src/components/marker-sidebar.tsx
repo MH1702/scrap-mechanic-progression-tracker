@@ -290,7 +290,7 @@ export function MarkerSidebar({
                 <span className="min-w-0">
                   <span className="block text-xs font-medium">Show road network</span>
                   <span className="block text-[0.625rem] text-muted-foreground">
-                    Experimental tile-based visualization.
+                    Tile-based visualization.
                   </span>
                 </span>
                 <Switch

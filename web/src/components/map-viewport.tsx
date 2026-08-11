@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { MarkerIcon, markerIconComponent } from "@/components/marker-icon"
 import { markerHoverLabel } from "@/lib/markers"
+import { mappedTileRoads, rotateRoadPoint, type RoadMapping } from "@/lib/road-mappings"
 import type {
   Atlas,
   CustomMarker,
@@ -59,7 +60,7 @@ interface MapContextMenu {
   worldY: number
 }
 
-function roadConnections(mask: string, rotation: number): number[] {
+function maskedRoadConnections(mask: string, rotation: number): number[] {
   const maskEdges = [0, 3, 2, 1]
   const activeEdges = [...mask].reduce<number[]>(
     (result, bit, edge) => bit === "1" ? [...result, edge] : result,
@@ -77,6 +78,47 @@ function roadConnections(mask: string, rotation: number): number[] {
         : mappedEdge
     return (reflectedEdge - rotation + 4) % 4
   })
+}
+
+const straightRoadPoiPattern = /^(?:Kiosk_64_0[123]|Random_Road_64_0[1-4]|SchematicStation_64_01|ChemicalPlant_Road_64_01|BuilderQuest_ResourceCar_64_01)$/i
+const stationRoadPattern = /^(?:MechanicStation_128_01|MechanicStation_QuestTile_01|PackingStation_(?:Vegetable|Fruit)_128_01)$/i
+
+function straightConnections(rotation: number): number[] {
+  return [1, 3].map((edge) => (edge - rotation + 4) % 4)
+}
+
+function tileRoadConnections(
+  name: string,
+  rotation: number,
+  xOffset: number,
+  yOffset: number,
+): number[] | undefined {
+  const match = name.match(/Road\((\d{4})\)/i)
+  if (match) return maskedRoadConnections(match[1], rotation)
+
+  // generate_roads.lua connects these one-cell road POIs west-to-east before
+  // applying their placement rotation. Their names do not carry a road mask.
+  if (straightRoadPoiPattern.test(name)) return straightConnections(rotation)
+
+  // Mechanic and packing stations are two-cell tiles with a straight road
+  // across both cells of their unrotated south row.
+  if (stationRoadPattern.test(name) && yOffset === 0 && (xOffset === 0 || xOffset === 1)) {
+    return straightConnections(rotation)
+  }
+  return undefined
+}
+
+function tilePlacementOrigin(
+  cellX: number,
+  cellY: number,
+  rotation: number,
+  xOffset: number,
+  yOffset: number,
+): [number, number] {
+  if (rotation === 1) return [cellX + yOffset, cellY - xOffset]
+  if (rotation === 2) return [cellX + xOffset, cellY + yOffset]
+  if (rotation === 3) return [cellX - yOffset, cellY + xOffset]
+  return [cellX - xOffset, cellY - yOffset]
 }
 
 export function MapViewport({
@@ -452,20 +494,65 @@ export function MapViewport({
   const roadSegments = useMemo(() => {
     if (!model || !atlas) return []
     const segments: Array<{ cellX: number; cellY: number; x: number; y: number; connections: number[] }> = []
-    for (const [x, y, uuid, rotation] of model.cells) {
+    for (const [x, y, uuid, rotation, xOffset, yOffset] of model.cells) {
       const tile = atlas.manifest.tiles[uuid]
-      const match = tile?.name.match(/Road\((\d{4})\)/i)
-      if (!match) continue
+      if (!tile) continue
+      const connections = tileRoadConnections(tile.name, rotation, xOffset, yOffset)
+      if (!connections) continue
       const segment = {
         cellX: x,
         cellY: y,
         x: (x - model.bounds.xMin) * px,
         y: (model.bounds.yMax - y) * px,
-        connections: roadConnections(match[1], rotation),
+        connections,
       }
       segments.push(segment)
     }
     return segments
+  }, [atlas, model, px])
+
+  const mappedRoadPaths = useMemo(() => {
+    if (!model || !atlas) return []
+    const placements = new Map<string, {
+      minX: number
+      maxY: number
+      rotation: number
+      size: number
+      roads: RoadMapping
+    }>()
+    for (const [x, y, uuid, rotation, xOffset, yOffset] of model.cells) {
+      const tile = atlas.manifest.tiles[uuid]
+      if (!tile) continue
+      const roads = mappedTileRoads(tile.name)
+      if (!roads) continue
+      const [originX, originY] = tilePlacementOrigin(x, y, rotation, xOffset, yOffset)
+      const key = `${uuid}:${originX}:${originY}:${rotation}`
+      const placement = placements.get(key)
+      if (placement) {
+        placement.minX = Math.min(placement.minX, x)
+        placement.maxY = Math.max(placement.maxY, y)
+      } else {
+        placements.set(key, {
+          minX: x,
+          maxY: y,
+          rotation,
+          size: Math.max(tile.cellsX, tile.cellsY),
+          roads,
+        })
+      }
+    }
+
+    return [...placements.entries()].flatMap(([placementKey, placement]) =>
+      placement.roads.map((road, roadIndex) => ({
+        key: `${placementKey}:${roadIndex}`,
+        points: road.map((point) => {
+          const [localX, localY] = rotateRoadPoint(point, placement.rotation, placement.size)
+          const mapX = (placement.minX - model.bounds.xMin + localX) * px
+          const mapY = (model.bounds.yMax - placement.maxY + localY) * px
+          return `${mapX},${mapY}`
+        }).join(" "),
+      })),
+    )
   }, [atlas, model, px])
 
   return (
@@ -540,13 +627,13 @@ export function MapViewport({
         <>
           <canvas ref={canvasRef} className="map-canvas" />
           <div ref={mapRef} className="world-map">
-            {showRoadNetwork && roadSegments.length > 0 && (
+            {showRoadNetwork && (roadSegments.length > 0 || mappedRoadPaths.length > 0) && (
               <svg
                 className="road-network"
                 width={(model.bounds.xMax - model.bounds.xMin + 1) * px}
                 height={(model.bounds.yMax - model.bounds.yMin + 1) * px}
                 viewBox={`0 0 ${(model.bounds.xMax - model.bounds.xMin + 1) * px} ${(model.bounds.yMax - model.bounds.yMin + 1) * px}`}
-                aria-label="Experimental road network overlay"
+                aria-label="Road network overlay"
               >
                 {roadSegments.map((segment, index) => {
                   const paths: React.ReactNode[] = []
@@ -562,6 +649,9 @@ export function MapViewport({
                     </g>
                   )
                 })}
+                {mappedRoadPaths.map((road) => (
+                  <polyline key={road.key} points={road.points} />
+                ))}
               </svg>
             )}
             <div className={`marker-layer${alwaysShowLabels ? " labels-always-visible" : ""}`}>
