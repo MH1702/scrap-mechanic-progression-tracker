@@ -231,6 +231,10 @@ body {
   box-shadow: 0 0 0 1px #050907;
 }
 
+.poi-marker.quest-completed::after {
+  top: -7px;
+}
+
 .poi-marker span {
   position: absolute;
   top: 50%;
