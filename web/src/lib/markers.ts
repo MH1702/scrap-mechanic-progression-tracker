@@ -54,6 +54,7 @@ export function collectPoiMarkers(
     ...(model.progression?.activeQuests ?? []),
     ...(model.progression?.completedQuests ?? []),
   ])
+  const completedQuests = new Set(model.progression?.completedQuests ?? [])
   const logs = new Set(model.progression?.unlockedLogs ?? [])
   const warehouses = new Map(
     (model.warehouses ?? []).map((warehouse) => [
@@ -119,6 +120,9 @@ export function collectPoiMarkers(
       const warehouseCompleted = definition.featureType === "warehouse"
         ? warehouses.get(`${originX}:${originY}`)?.destroyed ?? false
         : undefined
+      const questCompleted = (definition.category === "main_quest" || definition.category === "side_quest") && definition.quest
+        ? completedQuests.has(definition.quest)
+        : undefined
       result.push({
         ...definition,
         key: `poi:${definition.poiType}:${definition.category}:${definition.featureType ?? definition.label}:${originX}:${originY}:${definition.localX}:${definition.localY}:${uuid}`,
@@ -127,6 +131,7 @@ export function collectPoiMarkers(
         worldX,
         worldY,
         warehouseCompleted,
+        questCompleted,
       })
     }
   }

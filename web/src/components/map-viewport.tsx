@@ -526,7 +526,7 @@ export function MapViewport({
               const label = markerHoverLabel(marker)
               return (
                 <div
-                  className={`poi-marker ${marker.category} ${marker.featureType ?? ""}${markerIconComponent(marker) ? " has-icon" : ""}${marker.warehouseCompleted ? " warehouse-completed" : ""}${marker.unlocked ? "" : " locked"}${selectedKey === marker.key ? " selected" : ""}`}
+                  className={`poi-marker ${marker.category} ${marker.featureType ?? ""}${markerIconComponent(marker) ? " has-icon" : ""}${marker.warehouseCompleted ? " warehouse-completed" : ""}${marker.questCompleted ? " quest-completed" : ""}${marker.unlocked ? "" : " locked"}${selectedKey === marker.key ? " selected" : ""}`}
                   key={marker.key}
                   style={{
                     left: (marker.worldX / 64 - model.bounds.xMin) * px,

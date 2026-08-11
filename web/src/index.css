@@ -211,7 +211,8 @@ body {
   color: #d1d5db;
 }
 
-.poi-marker.warehouse-completed::after {
+.poi-marker.warehouse-completed::after,
+.poi-marker.quest-completed::after {
   content: "✓";
   position: absolute;
   top: -4px;

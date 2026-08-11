@@ -122,6 +122,7 @@ export interface PoiMarker extends PoiDefinition {
   worldX: number
   worldY: number
   warehouseCompleted?: boolean
+  questCompleted?: boolean
 }
 
 export interface MarkerTarget {
